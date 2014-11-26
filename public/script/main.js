@@ -125,6 +125,20 @@
 
   ko.applyBindings(vm);
 
+  $('#colorpallet').hide();
+
+  $('#colorpallet_link').click(function() {
+    var text;
+    text = '';
+    if ($('#colorpallet').is(':visible')) {
+      text = '開く';
+    } else {
+      text = '閉じる';
+    }
+    $('#colorpallet_link').html(text);
+    return $('#colorpallet').toggle();
+  });
+
   console.log("hoge");
 
 }).call(this);

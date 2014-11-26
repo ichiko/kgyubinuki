@@ -1,61 +1,142 @@
 <html>
 <head>
 	<meta charset="utf-8"/>
-	<title>加賀ゆびぬきシミュレータ</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>加賀ゆびぬき　刺し模様シミュレータ</title>
+
+	<link href="lib/bootstrap/bootstrap.min.css" rel="stylesheet">
+	<link href="css/ybnk.css" rel="stylesheet">
 
 	<script type="text/javascript" src="lib/knockoutjs/knockout.js"></script>
 
 </head>
 <body>
-	<h1>加賀ゆびぬき　パターンシミュレータ</h1>
+	<nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+		  <div class="container">
+			<div class="navbar-header">
+			  <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+				<span class="sr-only">Toggle navigation</span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			  </button>
+			  <a class="navbar-brand" href="#">水無月の余韻</a>
+			</div>
+			<div id="navbar" class="collapse navbar-collapse">
+			  <ul class="nav navbar-nav">
+				<li class="active"><a href="#">加賀ゆびぬきシミュレータ</a></li>
+			  </ul>
+			</div><!--/.nav-collapse -->
+		  </div>
+		</nav>
 
-	<p>
-	加賀ゆびぬきの刺し模様をシミュレーションします。
+		<div class="container">
+			<div class="page-header">
+				<h1>加賀ゆびぬき　刺し模様シミュレータ</h1>
+			</div>
 
-	<ul>
-	<li>手順どおりに、リストにしていけばだいたい再現します。</li>
-	<li>針数の二倍の周分の手順を指定すれば、ぴっちり埋まります。（針数は、地割り一つあたりの針数です。）</li>
-	<li>ぜんぶ右向きで刺した場合のみ対応しています。</li>
-	</ul>
-	</p>
-	<p>
-	できないこと。
-	<ul>
-	<li>くぐらせの再現。</li>
-	<li>刺す方向の変更。（そのうちやりたい。）</li>
-	</ul>
-	</p>
+			<p class="lead">
+			加賀ゆびぬきの刺し模様をシミュレートします。
 
-	<canvas id="canvas" style="border: solid 1px black" width="600" height="120"></canvas>
+			<ul>
+			<li>手順どおりに、リストにしていけばだいたい再現します。</li>
+			<li>針数の二倍の周分の手順を指定すれば、ぴっちり埋まります。（針数は、地割り一つあたりの針数です。）</li>
+			<li>ぜんぶ右向きで刺した場合のみ対応しています。</li>
+			</ul>
+			</p>
+			<p>
+			できないこと。
+			<ul>
+			<li>くぐらせの再現。</li>
+			<li>刺す方向の変更。（そのうちやりたい。）</li>
+			<li>数値のエラーチェック。</li>
+			</ul>
+			</p>
 
-	<p>
-	地割り: <input data-bind="value: division"/>
-	針数: <input data-bind="value: resolution"/>
-	</p>
+			<h3>使い方</h3>
 
-	<button data-bind="click: addPattern">手順の追加</button>
-	<button data-bind="click: draw">シミュレート</button>
+			<p>すべての入力は「半角」で行ってください。動かなくなったら、ページをリロードすると元に戻ります。</p>
 
-	<table>
-		<thead><tr>
-			<th>offset</th><th>色</th><th>トビ</th><th>周回</th><th></th>
-		</tr></thead>
-		<tbody data-bind="foreach: patterns">
-			<tr>
-				<td><input data-bind="value: offset"/></td>
-				<td><input data-bind="value: color" /></td>
-				<td><input data-bind="value: jump" /></td>
-				<td><input data-bind="value: round" /></td>
-				<td>
-					<a href="#" data-bind="click: $root.moveUp">▲</a>
-					<a href="#" data-bind="click: $root.moveDown">▼</a>
-				</td>
-				<td><a href="#" data-bind="click: $root.removePattern">削除</a></td>
-				<td><a href="#" data-bind="click: $root.duplicate">複製</a></td>
-			</tr>
-		</tbody>
-	</table>
+			<ol>
+			<li>「地割り」を指定します。（必ず半角数字）</li>
+			<li>「針数」を指定します。針数は、地割り一つあたりの針数です。（必ず半角数字）</li>
+			<li>刺しの手順を指定します。「刺し位置」、「色」、「トビ」、「周回」をそれぞれ指定します。
+				<ol>
+				<li>「刺し位置」は基本とする開始位置からいくつずらして刺し始めるかを指定します。(必ず半角で、0または1）</li>
+				<li>「色」は、糸の色です。CSSスタイルで、色名または16進数表記に対応しています。コピペ用基本色は下記参照。（必ず半角英数）</li>
+				<li>「トビ」は、トビ数を指定してください。（必ず半角数字）</li>
+				<li>「周回」は、その糸で何周するかを指定します。（必ず半角数字）</li>
+				</ol>
+				行が足りなくなったら、「手順の追加」ボタンを押してください。<br/>
+				同じ内容で別の行を指定する場合、複製元の行にある「複製」ボタンを押すことで、末尾に追加できます。<br/>
+				順序を間違えた場合、「▲」ボタンまたは「▼」ボタンで順序を入れ替えられます。
+				</li>
+			</ol>
 
+			<p>値が反映されないな、と思ったら<strong>全角入力でないか確認してください。</strong></p>
+
+			<h4>
+			コピペ用基本色一覧。<a href="#colorpallet_link" id="colorpallet_link">開く</a>
+			</h4>
+			<div id="colorpallet" style="width: 500px">
+				<table class="table">
+					<thead><tr>
+						<th>色名</th><th>指定する値（こっちをコピペ）</th>
+					</tr></thead>
+					<tbody>
+						<tr><td>赤</td><td>red</td></tr>
+						<tr><td>オレンジ</td><td>orange</td></tr>
+						<tr><td>黄色</td><td>yellow</td></tr>
+						<tr><td>黄緑</td><td>greenyellow</td></tr>
+						<tr><td>緑</td><td>green</td></tr>
+						<tr><td>青緑</td><td>lightseagreen</td></tr>
+						<tr><td>青</td><td>blue</td></tr>
+						<tr><td>紫</td><td>purple</td></tr>
+						<tr><td>白</td><td>white</td></tr>
+						<tr><td>灰色</td><td>gray</td></tr>
+						<tr><td>黒</td><td>black</td></tr>
+					</tbody>
+				</table>
+			</div>
+
+			<h3 class="page-header">シミュレータ</h2>
+
+			<p>
+			<canvas id="canvas" style="border: solid 1px black" width="600" height="120"></canvas>
+			</p>
+
+			<p>
+			地割り: <input data-bind="value: division"/>
+			針数: <input data-bind="value: resolution"/>
+			</p>
+
+			<button data-bind="click: addPattern">手順の追加</button>
+			<button data-bind="click: draw">シミュレート</button>
+
+			<table class="table">
+				<thead><tr>
+					<th>刺し位置</th><th>色</th><th>トビ</th><th>周回</th><th></th><th></th><th></th>
+				</tr></thead>
+				<tbody data-bind="foreach: patterns">
+					<tr>
+						<td><input data-bind="value: offset"/></td>
+						<td><input data-bind="value: color" /></td>
+						<td><input data-bind="value: jump" /></td>
+						<td><input data-bind="value: round" /></td>
+						<td>
+							<a href="#" data-bind="click: $root.moveUp">▲</a>
+							<a href="#" data-bind="click: $root.moveDown">▼</a>
+						</td>
+						<td><a href="#" data-bind="click: $root.removePattern">削除</a></td>
+						<td><a href="#" data-bind="click: $root.duplicate">複製</a></td>
+					</tr>
+				</tbody>
+			</table>
+
+		</div><!-- .container -->
+
+	<script type="text/javascript" src="lib/jquery/jquery.js"></script>
+	<script type="text/javascript" src="lib/bootstrap/bootstrap.min.js"></script>
 	<script type="text/javascript" src="script/main.js"></script>
 
 </body>

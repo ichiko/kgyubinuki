@@ -15,18 +15,12 @@
     "tests"
   ],
   "dependencies": {
-    "knockoutjs": "~3.2.0"
+    "knockoutjs": "~3.2.0",
+    "bootstrap": "~3.3.1"
   },
   "exportsOverride": {
     "bootstrap": {
-      "/": [
-        "dist/js/bootstrap.min.js",
-        "dist/css/bootstrap.min.css"
-      ],
-      "../fonts/": "dist/fonts/*"
-    },
-    "jquery": {
-      "/": "dist/jquery.min.js"
+      "/": ["dist/css/bootstrap.min.css", "dist/fonts/*", "dist/js/bootstrap.min.js"]
     }
   }
 }

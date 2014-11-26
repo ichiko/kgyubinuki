@@ -101,4 +101,18 @@ vm = new PatternViewModel
 
 ko.applyBindings(vm)
 
+#------
+
+$('#colorpallet').hide()
+
+$('#colorpallet_link').click ->
+	text = ''
+	if ($('#colorpallet').is(':visible'))
+		text = '開く'
+	else
+		text = '閉じる'
+	$('#colorpallet_link').html(text)
+	$('#colorpallet').toggle()
+
+
 console.log("hoge")
