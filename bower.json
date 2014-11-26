@@ -1,0 +1,32 @@
+{
+  "name": "kgyubinuki",
+  "version": "0.0.1",
+  "homepage": "https://github.com/ichiko",
+  "authors": [
+    "ichiko <ichigo_sky@hotmail.com>"
+  ],
+  "description": "",
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "knockoutjs": "~3.2.0"
+  },
+  "exportsOverride": {
+    "bootstrap": {
+      "/": [
+        "dist/js/bootstrap.min.js",
+        "dist/css/bootstrap.min.css"
+      ],
+      "../fonts/": "dist/fonts/*"
+    },
+    "jquery": {
+      "/": "dist/jquery.min.js"
+    }
+  }
+}

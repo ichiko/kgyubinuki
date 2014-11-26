@@ -1,0 +1,62 @@
+<html>
+<head>
+	<meta charset="utf-8"/>
+	<title>加賀ゆびぬきシミュレータ</title>
+
+	<script type="text/javascript" src="lib/knockoutjs/knockout.js"></script>
+
+</head>
+<body>
+	<h1>加賀ゆびぬき　パターンシミュレータ</h1>
+
+	<p>
+	加賀ゆびぬきの刺し模様をシミュレーションします。
+
+	<ul>
+	<li>手順どおりに、リストにしていけばだいたい再現します。</li>
+	<li>針数の二倍の周分の手順を指定すれば、ぴっちり埋まります。（針数は、地割り一つあたりの針数です。）</li>
+	<li>ぜんぶ右向きで刺した場合のみ対応しています。</li>
+	</ul>
+	</p>
+	<p>
+	できないこと。
+	<ul>
+	<li>くぐらせの再現。</li>
+	<li>刺す方向の変更。（そのうちやりたい。）</li>
+	</ul>
+	</p>
+
+	<canvas id="canvas" style="border: solid 1px black" width="600" height="120"></canvas>
+
+	<p>
+	地割り: <input data-bind="value: division"/>
+	針数: <input data-bind="value: resolution"/>
+	</p>
+
+	<button data-bind="click: addPattern">手順の追加</button>
+	<button data-bind="click: draw">シミュレート</button>
+
+	<table>
+		<thead><tr>
+			<th>offset</th><th>色</th><th>トビ</th><th>周回</th><th></th>
+		</tr></thead>
+		<tbody data-bind="foreach: patterns">
+			<tr>
+				<td><input data-bind="value: offset"/></td>
+				<td><input data-bind="value: color" /></td>
+				<td><input data-bind="value: jump" /></td>
+				<td><input data-bind="value: round" /></td>
+				<td>
+					<a href="#" data-bind="click: $root.moveUp">▲</a>
+					<a href="#" data-bind="click: $root.moveDown">▼</a>
+				</td>
+				<td><a href="#" data-bind="click: $root.removePattern">削除</a></td>
+				<td><a href="#" data-bind="click: $root.duplicate">複製</a></td>
+			</tr>
+		</tbody>
+	</table>
+
+	<script type="text/javascript" src="script/main.js"></script>
+
+</body>
+</html>

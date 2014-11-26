@@ -1,0 +1,6 @@
+.bundle
+bower_components
+node_modules
+vendor
+
+src/js
