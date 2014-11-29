@@ -110,23 +110,34 @@
 			</p>
 
 			<p>
-			地割り: <input data-bind="value: division"/>
+			コマ: <input data-bind="value: division"/>
+			トビ: <input data-bind="value: jump" />
 			針数: <input data-bind="value: resolution"/>
 			</p>
 
 			<button data-bind="click: addPattern">手順の追加</button>
 			<button data-bind="click: draw">シミュレート</button>
 
+			<p>
+			<input type="checkbox" data-bind="checked: step_simulation">途中までシミュレート</input>
+			&nbsp;それぞれの段数: <input data-bind="value: steps" />
+			</p>
+
 			<table class="table">
 				<thead><tr>
-					<th>刺し位置</th><th>色</th><th>トビ</th><th>周回</th><th></th><th></th><th></th>
+					<th>刺し位置</th><th>色</th><th>段</th><th></th><th></th><th></th>
 				</tr></thead>
 				<tbody data-bind="foreach: patterns">
 					<tr>
-						<td><input data-bind="value: offset"/></td>
+						<td>
+							<input data-bind="value: formattedOffset"/>
+							<p class="invalid" data-bind="visible: !validOffset()">数値ではありません！</p>
+						</td>
 						<td><input data-bind="value: color" /></td>
-						<td><input data-bind="value: jump" /></td>
-						<td><input data-bind="value: round" /></td>
+						<td>
+							<input data-bind="value: formattedRound" />
+							<p class="invalid" data-bind="visible: !validRound()">数値ではありません！</p>
+						</td>
 						<td>
 							<a href="#" data-bind="click: $root.moveUp">▲</a>
 							<a href="#" data-bind="click: $root.moveDown">▼</a>

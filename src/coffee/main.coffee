@@ -1,17 +1,66 @@
+CHECKER_MAX = 100
+
 class Sasi
-	constructor: (@offset, @color, @jump, @round) ->
+	constructor: (offset, @color, round) ->
+		self = @
+
+		@offset = ko.observable(offset)
+		@validOffset = ko.observable(true)
+		@round = ko.observable(round)
+		@validRound = ko.observable(true)
+
+		@formattedOffset = ko.computed({
+		read: ->
+			value = @offset()
+			if isNaN(value)
+				value = parseInt(value.replace(/[^\d]/g, ""))
+				if isNaN(value)
+					value = 0
+			@offset(value)
+			return value
+		write: (value) ->
+			value = parseInt(value.replace(/[^\d]/g, ""))
+			if isNaN(value)
+				@validOffset(false)
+			else
+				@validOffset(true)
+				@offset(value)
+		owner: @
+		})
+
+		@formattedRound = ko.computed({
+		read: ->
+			value = @round()
+			if isNaN(value)
+				value = parseInt(value.replace(/[^\d]/g, ""))
+				if isNaN(value)
+					value = 0
+			@round(if value <= 0 then 1 else value)
+			return @round()
+		write: (value) ->
+			value = parseInt(value.replace(/[^\d]/g, ""))
+			if isNaN(value)
+				@validRound(false)
+			else
+				@validRound(true)
+				@round(value)
+		owner: @
+		})
 
 class PatternViewModel
 	constructor: ->
 		@patterns = ko.observableArray([
-			new Sasi(0, '#ff0000', 2, 3)
-			new Sasi(0, '#0000ff', 2, 3)
+			new Sasi(0, 'red', 1)
+			new Sasi(0, 'blue', 1)
 		])
 		@division = ko.observable(8)
+		@jump = ko.observable(2)
 		@resolution = ko.observable(30)
+		@step_simulation = ko.observable(false)
+		@steps = ko.observable(3)
 
 	addPattern: ->
-		@patterns.push(new Sasi(0, '#000000', 2, 1))
+		@patterns.push(new Sasi(0, '#000000', 1))
 
 	# ★注意★
 	# ViewModelの子として定義できるが、実行コンテキストはViewModelでない
@@ -20,7 +69,7 @@ class PatternViewModel
 		vm.patterns.remove(pattern)
 
 	duplicate: (pattern) ->
-		vm.patterns.push(new Sasi(pattern.offset, pattern.color, pattern.jump, pattern.round))
+		vm.patterns.push(new Sasi(pattern.offset, pattern.color, pattern.round))
 
 	moveUp: (pattern) ->
 		index = vm.patterns.indexOf(pattern)
@@ -41,11 +90,25 @@ class PatternViewModel
 		cc.clearRect(0, 0, canvas.width, canvas.height);
 		cc.save()
 
-		vm.drawScale(cc)
+		@drawScale(cc)
 		cc.restore()
 
 		div = vm.division()
+		jump = vm.jump()
 		resolution = vm.resolution()
+		step_simulation = vm.step_simulation()
+		steps = vm.steps()
+		round_max = resolution * jump
+
+		if step_simulation
+			round_max = steps * jump
+
+		console.log "div=", div, "jump=", jump, "resolution=", resolution, "stepSimulation=", step_simulation, "steps=", steps, "round_max=", round_max
+
+		## FIXME
+		# ・トビをかえると、元の値に戻ってもシミュレーション結果がおかしい
+		# ・条件により無限ループする
+
 		sec = 400 / div
 		if resolution > 0
 			hari = sec / resolution
@@ -53,32 +116,49 @@ class PatternViewModel
 			hari = 0
 		offset_scale = 40
 
-		offset_hari_even = -hari
-		offset_hari_odd = -hari
+		console.log "sec=", sec, "hari=", hari
 
 		patterns = vm.patterns()
-		for sasi in patterns
-			for h in [0...sasi.round]
-				offset_x = 0
-				if sasi.offset % sasi.jump == 0
-					offset_hari_even += hari
-					offset_x = offset_hari_even
-				else
-					offset_hari_odd += hari
-					offset_x = offset_hari_odd
+		offset_hari = []
+		for j in [0...patterns.length]
+			offset_hari.push -hari
 
-				i = 0
-				while i < div
-					cc.beginPath()
-					cc.strokeStyle = sasi.color
-					if (sasi.offset % sasi.jump == 0 and i % sasi.jump == 0) or (sasi.offset % sasi.jump != 0 and i % sasi.jump != 0)
+		rounds = 1
+		checker = 1
+		while (rounds < round_max) and (checker < CHECKER_MAX)
+			checker += 1
+
+			for sasi, idx in patterns
+				round = sasi.round()
+				offset = sasi.offset()
+				color = sasi.color
+
+				if rounds <= patterns.length
+					console.log "round=", round, ", offset=", offset, ", color=", color
+
+				h = 0
+				while h < round
+					h += 1
+
+					rounds += 1
+					offset_x = 0
+					offset_hari[offset] += hari
+					offset_x = offset_hari[offset]
+
+					i = offset
+					while i <= div
+						cc.beginPath()
+						cc.strokeStyle = color
 						cc.moveTo(offset_scale + offset_x + sec * i, 50)
-						cc.lineTo(offset_scale + offset_x + sec * (i + sasi.jump / 2), 80)
-					else
-						cc.moveTo(offset_scale + offset_x + sec * i, 80)
-						cc.lineTo(offset_scale + offset_x + sec * (i + sasi.jump / 2), 50)
-					cc.stroke()
-					i += sasi.jump / 2
+						cc.lineTo(offset_scale + offset_x + sec * (i + jump / 2), 80)
+						cc.stroke()
+
+						cc.beginPath()
+						cc.moveTo(offset_scale + offset_x + sec * (i - jump / 2), 80)
+						cc.lineTo(offset_scale + offset_x + sec * i, 50)
+						cc.stroke()
+
+						i += jump
 
 		cc.restore()
 
