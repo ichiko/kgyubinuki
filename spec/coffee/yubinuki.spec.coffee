@@ -94,8 +94,11 @@ describe "Koma", ->
 			koma = new Koma(0, true, config)
 			expect(koma.direction).toBe(Direction.Down)
 			expect(koma.roundCount).toBe(0)
-			koma.kagaru()
+			expect(koma.kagaru()).toBe(true)
 			expect(koma.direction).toBe(Direction.Up)
+			expect(koma.roundCount).toBe(0)
+			expect(koma.kagaru()).toBe(true)
+			expect(koma.direction).toBe(Direction.Down)
 			expect(koma.roundCount).toBe(0)
 
 		it "round Up (4:2)", ->
@@ -105,10 +108,10 @@ describe "Koma", ->
 			expect(koma.direction).toBe(Direction.Down)
 			expect(koma.roundCount).toBe(0)
 			for i in [1..3]
-				koma.kagaru()
+				expect(koma.kagaru()).toBe(true)
 			expect(koma.direction).toBe(Direction.Up)
 			expect(koma.roundCount).toBe(0)
-			koma.kagaru()
+			expect(koma.kagaru()).toBe(false)
 			expect(koma.direction).toBe(Direction.Down)
 			expect(koma.roundCount).toBe(1)
 
@@ -119,10 +122,10 @@ describe "Koma", ->
 			expect(koma.direction).toBe(Direction.Down)
 			expect(koma.roundCount).toBe(0)
 			for i in [1..5]
-				koma.kagaru()
+				expect(koma.kagaru()).toBe(true)
 			expect(koma.direction).toBe(Direction.Up)
 			expect(koma.roundCount).toBe(0)
-			koma.kagaru()
+			expect(koma.kagaru()).toBe(false)
 			expect(koma.direction).toBe(Direction.Down)
 			expect(koma.roundCount).toBe(1)
 
@@ -133,10 +136,10 @@ describe "Koma", ->
 			expect(koma.direction).toBe(Direction.Down)
 			expect(koma.roundCount).toBe(0)
 			for i in [1..9]
-				koma.kagaru()
+				expect(koma.kagaru()).toBe(true)
 			expect(koma.direction).toBe(Direction.Up)
 			expect(koma.roundCount).toBe(0)
-			koma.kagaru()
+			expect(koma.kagaru()).toBe(false)
 			expect(koma.direction).toBe(Direction.Down)
 			expect(koma.roundCount).toBe(1)
 
@@ -147,10 +150,10 @@ describe "Koma", ->
 			expect(koma.direction).toBe(Direction.Down)
 			expect(koma.roundCount).toBe(0)
 			for i in [1..21]
-				koma.kagaru()
+				expect(koma.kagaru()).toBe(true)
 			expect(koma.direction).toBe(Direction.Up)
 			expect(koma.roundCount).toBe(0)
-			koma.kagaru()
+			expect(koma.kagaru()).toBe(false)
 			expect(koma.direction).toBe(Direction.Down)
 			expect(koma.roundCount).toBe(1)
 
@@ -161,10 +164,10 @@ describe "Koma", ->
 			expect(koma.direction).toBe(Direction.Down)
 			expect(koma.roundCount).toBe(0)
 			for i in [1..3]
-				koma.kagaru()
+				expect(koma.kagaru()).toBe(true)
 			expect(koma.direction).toBe(Direction.Up)
 			expect(koma.roundCount).toBe(0)
-			koma.kagaru()
+			expect(koma.kagaru()).toBe(false)
 			expect(koma.direction).toBe(Direction.Down)
 			expect(koma.roundCount).toBe(1)
 
@@ -175,10 +178,10 @@ describe "Koma", ->
 			expect(koma.direction).toBe(Direction.Down)
 			expect(koma.roundCount).toBe(0)
 			for i in [1..19]
-				koma.kagaru()
+				expect(koma.kagaru()).toBe(true)
 			expect(koma.direction).toBe(Direction.Up)
 			expect(koma.roundCount).toBe(0)
-			koma.kagaru()
+			expect(koma.kagaru()).toBe(false)
 			expect(koma.direction).toBe(Direction.Down)
 			expect(koma.roundCount).toBe(1)
 
@@ -189,12 +192,132 @@ describe "Koma", ->
 			expect(koma.direction).toBe(Direction.Down)
 			expect(koma.roundCount).toBe(0)
 			for i in [1..9]
-				koma.kagaru()
+				expect(koma.kagaru()).toBe(true)
 			expect(koma.direction).toBe(Direction.Up)
 			expect(koma.roundCount).toBe(0)
-			koma.kagaru()
+			expect(koma.kagaru()).toBe(false)
 			expect(koma.direction).toBe(Direction.Down)
 			expect(koma.roundCount).toBe(1)
+
+	describe "isFilled", ->
+		beforeEach ->
+			config.resolution = 10
+			config.koma = 4
+			config.tobi = 2
+
+		it "not filled", ->
+			koma = new Koma(0, true, config)
+			koma.addIto('green', 1)
+			expect(koma.isFilled()).toBe(false)
+			koma.kagaru()
+			expect(koma.isFilled()).toBe(false)
+
+		it "filled", ->
+			koma = new Koma(0, true, config)
+			koma.addIto('green', 1)
+			expect(koma.isFilled()).toBe(false)
+			for i in [1..39]
+				koma.kagaru()
+			expect(koma.isFilled()).toBe(false)
+			koma.kagaru()
+			expect(koma.isFilled()).toBe(true)
+
+	describe "sasiStart/End", ->
+		it "offset 0, tobi 2, forward", ->
+			config.resolution = 10
+			config.koma = 4
+			config.tobi = 2
+
+			koma = new Koma(0, true, config)
+			expect(koma.sasiStartIndex()).toBe(0)
+			expect(koma.sasiEndIndex()).toBe(1)
+			koma.kagaru()
+			expect(koma.sasiStartIndex()).toBe(1)
+			expect(koma.sasiEndIndex()).toBe(2)
+
+		it "offset 0, tobi 3, forward", ->
+			config.resolution = 10
+			config.koma = 6
+			config.tobi = 3
+
+			koma = new Koma(0, true, config)
+			expect(koma.sasiStartIndex()).toBe(0)
+			expect(koma.sasiEndIndex()).toBe(1.5)
+			koma.kagaru()
+			expect(koma.sasiStartIndex()).toBe(1.5)
+			expect(koma.sasiEndIndex()).toBe(3)
+
+		it "offset 0, tobi 2, backward", ->
+			config.resolution = 10
+			config.koma = 4
+			config.tobi = 2
+
+			koma = new Koma(0, false, config)
+			expect(koma.sasiStartIndex()).toBe(0)
+			expect(koma.sasiEndIndex()).toBe(-1)
+			koma.kagaru()
+			expect(koma.sasiStartIndex()).toBe(-1)
+			expect(koma.sasiEndIndex()).toBe(-2)
+
+		it "offset 0, tobi 3, forward", ->
+			config.resolution = 10
+			config.koma = 6
+			config.tobi = 3
+
+			koma = new Koma(0, false, config)
+			expect(koma.sasiStartIndex()).toBe(0)
+			expect(koma.sasiEndIndex()).toBe(-1.5)
+			koma.kagaru()
+			expect(koma.sasiStartIndex()).toBe(-1.5)
+			expect(koma.sasiEndIndex()).toBe(-3)
+
+		it "offset 1, tobi 2, forward", ->
+			config.resolution = 10
+			config.koma = 4
+			config.tobi = 2
+
+			koma = new Koma(1, true, config)
+			expect(koma.sasiStartIndex()).toBe(1)
+			expect(koma.sasiEndIndex()).toBe(2)
+			koma.kagaru()
+			expect(koma.sasiStartIndex()).toBe(2)
+			expect(koma.sasiEndIndex()).toBe(3)
+
+		it "offset 1, tobi 3, forward", ->
+			config.resolution = 10
+			config.koma = 6
+			config.tobi = 3
+
+			koma = new Koma(1, true, config)
+			expect(koma.sasiStartIndex()).toBe(1)
+			expect(koma.sasiEndIndex()).toBe(2.5)
+			koma.kagaru()
+			expect(koma.sasiStartIndex()).toBe(2.5)
+			expect(koma.sasiEndIndex()).toBe(4)
+
+		it "offset 1, tobi 2, backward", ->
+			config.resolution = 10
+			config.koma = 4
+			config.tobi = 2
+
+			koma = new Koma(1, false, config)
+			expect(koma.sasiStartIndex()).toBe(1)
+			expect(koma.sasiEndIndex()).toBe(0)
+			koma.kagaru()
+			expect(koma.sasiStartIndex()).toBe(0)
+			expect(koma.sasiEndIndex()).toBe(-1)
+
+		it "offset 1, tobi 3, forward", ->
+			config.resolution = 10
+			config.koma = 6
+			config.tobi = 3
+
+			koma = new Koma(1, false, config)
+			expect(koma.sasiStartIndex()).toBe(1)
+			expect(koma.sasiEndIndex()).toBe(-0.5)
+			koma.kagaru()
+			expect(koma.sasiStartIndex()).toBe(-0.5)
+			expect(koma.sasiEndIndex()).toBe(-2)
 
 	describe "currentIto", ->
 		beforeEach ->
@@ -315,11 +438,20 @@ describe "Yubinuki", ->
 
 	it "addKoma", ->
 		yb = new Yubinuki(6, 2, 10, false)
-		koma1 = yb.addKoma(0, true)
-		koma2 = yb.addKoma(1, false)
+		yb.addKoma(0, true)
+		yb.addKoma(1, false)
 		expect(yb.komaArray.length).toBe(2)
-		expect(yb.komaArray[0]).toBe(koma1)
-		expect(yb.komaArray[1]).toBe(koma2)
+		expect(yb.komaArray[0].offset).toBe(0)
+		expect(yb.komaArray[0].forward).toBe(true)
+		expect(yb.komaArray[1].offset).toBe(1)
+		expect(yb.komaArray[1].forward).toBe(false)
+
+	it "addKoma (default arg)", ->
+		yb = new Yubinuki(8, 2, 20, false)
+		yb.addKoma(0)
+		expect(yb.komaArray.length).toBe(1)
+		expect(yb.komaArray[0].offset).toBe(0)
+		expect(yb.komaArray[0].forward).toBe(true)
 
 	describe "validate", ->
 		it "no koma", ->

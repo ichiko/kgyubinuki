@@ -30,22 +30,48 @@ class Koma extends ValidatableModel
 		@itoArray = []
 		@sasiCount = 0
 		@roundCount = 0
+		@roundScale = 1
+
+	setRoundScale: (s) ->
+		@roundScale = s
 
 	addIto: (color, roundNum) ->
 		ito = new Ito(color, roundNum)
 		@itoArray.push ito
 		return ito
 
+	# 戻り値：true(段が変わらない), false(次は段が変わる)
 	kagaru: ->
 		# 一段をかがるのに必要な針数：最小公倍数(コマ、トビ) / トビ * 2
-		@sasiCount += @config.tobi / 2.0
+		if @forward
+			@sasiCount += @config.tobi / 2.0
+		else
+			@sasiCount -= @config.tobi / 2.0
+
 		if @direction == Direction.Down
 			@direction = Direction.Up
 		else
 			@direction = Direction.Down
 
+		# TODO 開き差しのとき計算できないので、負数の場合は最小公倍数を加算して計算する必要がある
 		if (@sasiCount % @config.koma == 0) and (@sasiCount % @config.tobi == 0)
+			@sasiCount = 0
 			@roundCount += 1
+			return false
+
+		return true
+
+	isFilled: ->
+		@roundCount >= @config.resolution * @roundScale
+
+	sasiStartIndex: ->
+		@offset + @sasiCount
+
+	sasiEndIndex: ->
+		if @forward
+			return @offset + @sasiCount + @config.tobi / 2.0
+		else
+			return @offset + @sasiCount - @config.tobi / 2.0
 
 	currentIto: ->
 		totalRound = 0
@@ -82,6 +108,7 @@ class Koma extends ValidatableModel
 		super
 
 class Yubinuki extends ValidatableModel
+	# TODO @kasane 重ね差しの実装
 	constructor: (komaNum, tobiNum, resolution, @kasane) ->
 		super
 		@config = 
@@ -90,7 +117,16 @@ class Yubinuki extends ValidatableModel
 			resolution: resolution
 		@komaArray = []
 
-	addKoma: (offset, forward) ->
+	prepare: ->
+		if !@validate()
+			return false
+
+		if @komaArray.length == 1
+			@komaArray[0].setRoundScale(@config.tobi)
+
+		return true
+
+	addKoma: (offset, forward = true) ->
 		koma = new Koma(offset, forward, @config)
 		@komaArray.push koma
 		return koma
