@@ -436,6 +436,47 @@ describe "Yubinuki", ->
 			expect(yb.kasane).toBe(false)
 			expect(yb.komaArray.length).toBe(1)
 
+	describe "prepare", ->
+		it "no koma", ->
+			yb = new Yubinuki(6, 2, 10, false)
+			expect(yb.prepare()).toBe(false)
+
+		it "a koma (2)", ->
+			yb = new Yubinuki(6, 2, 10, false)
+			yb.addKoma(0, true)
+			expect(yb.prepare()).toBe(true)
+
+		it "a koma (3)", ->
+			yb = new Yubinuki(6, 3, 10, false)
+			yb.addKoma(0, true)
+			expect(yb.prepare()).toBe(true)
+
+		it "more than 1 and less than koma", ->
+			yb = new Yubinuki(6, 3, 10, false)
+			yb.addKoma(0, true)
+			yb.addKoma(1, true)
+			expect(yb.prepare()).toBe(false)
+
+		it "over koma", ->
+			yb = new Yubinuki(6, 2, 10, false)
+			yb.addKoma(0, true)
+			yb.addKoma(1, true)
+			yb.addKoma(2, true)
+			expect(yb.prepare()).toBe(false)
+
+		it "invalid koma", ->
+			yb = new Yubinuki(6, 2, 10, false)
+			koma = yb.addKoma(0, true)
+			koma.addIto('yellow', 5)
+			koma.addIto('red', 6)
+			expect(yb.prepare()).toBe(false)
+
+		it "offset conflict", ->
+			yb = new Yubinuki(6, 2, 10, false)
+			yb.addKoma(0, true)
+			yb.addKoma(0, true)
+			expect(yb.prepare()).toBe(false)
+
 	it "addKoma", ->
 		yb = new Yubinuki(6, 2, 10, false)
 		yb.addKoma(0, true)

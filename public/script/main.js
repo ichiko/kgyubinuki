@@ -12,7 +12,7 @@
       canvas = document.getElementById('canvas');
       cc = canvas.getContext('2d');
       cc.save();
-      this.simulator = new Simulator(cc);
+      this.simulator = new Simulator(canvas, cc);
     }
 
     YubinukiSimulatorVM.prototype.simulate = function() {
@@ -26,10 +26,13 @@
 
     YubinukiSimulatorVM.prototype.getYubinuki = function() {
       var koma, yubinuki;
-      yubinuki = new Yubinuki(8, 2, 30, false);
+      yubinuki = new Yubinuki(9, 3, 30, false);
       koma = yubinuki.addKoma(0);
-      koma.addIto('blue', 10);
-      koma.addIto('red', 5);
+      koma.addIto('blue', 1);
+      koma = yubinuki.addKoma(1);
+      koma.addIto('red', 1);
+      koma = yubinuki.addKoma(2);
+      koma.addIto('green', 1);
       return yubinuki;
     };
 
@@ -84,7 +87,8 @@
   CHECKER_MAX = 100;
 
   Simulator = (function() {
-    function Simulator(context) {
+    function Simulator(canvas, context) {
+      this.canvas = canvas;
       this.context = context;
     }
 
@@ -93,12 +97,18 @@
       komaNum = yubinuki.config.koma;
       kasane = yubinuki.kasane;
       yubinuki.prepare();
+      this.clearAll();
       this.drawScale(komaNum);
       if (kasane) {
 
       } else {
-        return this.drawSimple(yubinuki);
+        this.drawSimple(yubinuki);
       }
+      return this.cutoff();
+    };
+
+    Simulator.prototype.clearAll = function() {
+      return this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
     };
 
     Simulator.prototype.drawScale = function(komaNum) {
@@ -115,6 +125,11 @@
         _results.push(this.context.fillText(i, PADDING_LEFT + komaWidth * i, SCALE_LABEL_TOP));
       }
       return _results;
+    };
+
+    Simulator.prototype.cutoff = function() {
+      this.context.clearRect(0, KAGARI_TOP - 1, PADDING_LEFT - 1, KAGARI_BOTTOM - KAGARI_TOP + 2);
+      return this.context.clearRect(PADDING_LEFT + SIMULATOR_WIDTH + 1, KAGARI_TOP - 1, this.canvas.width - (PADDING_LEFT + SIMULATOR_WIDTH + 1), KAGARI_BOTTOM - KAGARI_TOP + 2);
     };
 
     Simulator.prototype.drawSimple = function(yubinuki) {
@@ -138,44 +153,44 @@
             offset = koma.offset;
             color = koma.currentIto().color;
             nextRound = true;
-            while (nextRound) {
-              direction = koma.direction;
-              sasiStart = koma.sasiStartIndex();
-              sasiEnd = koma.sasiEndIndex();
-              sasiOffset = koma.roundCount * sasiWidth;
-              start_x = PADDING_LEFT + sasiOffset + komaWidth * sasiStart;
-              end_x = PADDING_LEFT + sasiOffset + komaWidth * sasiEnd;
-              this.context.beginPath();
-              this.context.strokeStyle = color;
-              if (direction === Direction.Down) {
-                console.log("down");
-                this.context.moveTo(start_x, KAGARI_TOP);
-                this.context.lineTo(end_x, KAGARI_BOTTOM);
-              } else {
-                console.log("up");
-                this.context.moveTo(start_x, KAGARI_BOTTOM);
-                this.context.lineTo(end_x, KAGARI_TOP);
-              }
-              this.context.stroke();
-              if (end_x >= PADDING_LEFT + SIMULATOR_WIDTH) {
-                start_x -= SIMULATOR_WIDTH;
-                end_x -= SIMULATOR_WIDTH;
+            _results1.push((function() {
+              var _results2;
+              _results2 = [];
+              while (nextRound) {
+                direction = koma.direction;
+                sasiStart = koma.sasiStartIndex();
+                sasiEnd = koma.sasiEndIndex();
+                sasiOffset = koma.roundCount * sasiWidth;
+                start_x = PADDING_LEFT + sasiOffset + komaWidth * sasiStart;
+                end_x = PADDING_LEFT + sasiOffset + komaWidth * sasiEnd;
                 this.context.beginPath();
                 this.context.strokeStyle = color;
                 if (direction === Direction.Down) {
-                  console.log("down");
                   this.context.moveTo(start_x, KAGARI_TOP);
                   this.context.lineTo(end_x, KAGARI_BOTTOM);
                 } else {
-                  console.log("up");
                   this.context.moveTo(start_x, KAGARI_BOTTOM);
                   this.context.lineTo(end_x, KAGARI_TOP);
                 }
                 this.context.stroke();
+                if (end_x >= PADDING_LEFT + SIMULATOR_WIDTH) {
+                  start_x -= SIMULATOR_WIDTH;
+                  end_x -= SIMULATOR_WIDTH;
+                  this.context.beginPath();
+                  this.context.strokeStyle = color;
+                  if (direction === Direction.Down) {
+                    this.context.moveTo(start_x, KAGARI_TOP);
+                    this.context.lineTo(end_x, KAGARI_BOTTOM);
+                  } else {
+                    this.context.moveTo(start_x, KAGARI_BOTTOM);
+                    this.context.lineTo(end_x, KAGARI_TOP);
+                  }
+                  this.context.stroke();
+                }
+                _results2.push(nextRound = koma.kagaru());
               }
-              nextRound = koma.kagaru();
-            }
-            break;
+              return _results2;
+            }).call(this));
           }
           return _results1;
         }).call(this));
@@ -441,6 +456,29 @@
         }
       }
       return Yubinuki.__super__.isValid.apply(this, arguments);
+    };
+
+    Yubinuki.prototype.getErrorMessages = function() {
+      var ito, koma, messages, _i, _j, _len, _len1, _ref, _ref1;
+      messages = [];
+      if (this.validateMessage.length > 0) {
+        messages = messages.concat(this.validateMessage);
+      }
+      _ref = this.komaArray;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        koma = _ref[_i];
+        if (koma.validateMessage.length > 0) {
+          messages = messages.concat(koma.validateMessage);
+        }
+        _ref1 = koma.itoArray;
+        for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+          ito = _ref1[_j];
+          if (ito.validateMessage.length > 0) {
+            messages = messages.concat(ito.validateMessage);
+          }
+        }
+      }
+      return messages;
     };
 
     return Yubinuki;

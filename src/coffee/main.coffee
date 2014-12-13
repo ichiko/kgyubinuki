@@ -7,7 +7,7 @@ class YubinukiSimulatorVM
 		cc = canvas.getContext('2d');
 		cc.save()
 
-		@simulator = new Simulator(cc)
+		@simulator = new Simulator(canvas, cc)
 
 	simulate: ->
 		yubinuki = @getYubinuki()
@@ -18,10 +18,13 @@ class YubinukiSimulatorVM
 		cc.restore()
 
 	getYubinuki: ->
-		yubinuki = new Yubinuki(8, 2, 30, false)
+		yubinuki = new Yubinuki(9, 3, 30, false)
 		koma = yubinuki.addKoma(0)
-		koma.addIto('blue', 10)
-		koma.addIto('red', 5)
+		koma.addIto('blue', 1)
+		koma = yubinuki.addKoma(1)
+		koma.addIto('red', 1)
+		koma = yubinuki.addKoma(2)
+		koma.addIto('green', 1)
 		return yubinuki
 
 ko.applyBindings(new YubinukiSimulatorVM())

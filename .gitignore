@@ -3,4 +3,8 @@ bower_components
 node_modules
 vendor
 
+.DS_Store
+
 src/js
+spec/js
+spec/obj

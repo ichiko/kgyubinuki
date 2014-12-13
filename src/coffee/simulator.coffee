@@ -18,7 +18,7 @@ SCALE_TEXT_COLOR = '#000'
 CHECKER_MAX = 100
 
 class Simulator
-	constructor: (@context) ->
+	constructor: (@canvas, @context) ->
 
 	draw: (yubinuki) ->
 		komaNum = yubinuki.config.koma
@@ -27,12 +27,19 @@ class Simulator
 		# TODO validate
 		yubinuki.prepare()
 
+		@clearAll()
+
 		@drawScale(komaNum)
 
 		if kasane
 			# TODO
 		else
 			@drawSimple(yubinuki)
+
+		@cutoff()
+
+	clearAll: ->
+		@context.clearRect(0, 0, @canvas.width, @canvas.height);
 
 	drawScale: (komaNum) ->
 		komaWidth = SIMULATOR_WIDTH / komaNum
@@ -46,6 +53,10 @@ class Simulator
 
 			@context.textAlign = 'center'
 			@context.fillText(i, PADDING_LEFT + komaWidth * i, SCALE_LABEL_TOP)
+
+	cutoff: ->
+		@context.clearRect(0, KAGARI_TOP - 1, PADDING_LEFT - 1, KAGARI_BOTTOM - KAGARI_TOP + 2)
+		@context.clearRect(PADDING_LEFT + SIMULATOR_WIDTH + 1, KAGARI_TOP - 1, @canvas.width - (PADDING_LEFT + SIMULATOR_WIDTH + 1), KAGARI_BOTTOM - KAGARI_TOP + 2)
 
 	drawSimple: (yubinuki) ->
 		komaNum = yubinuki.config.koma
@@ -77,11 +88,9 @@ class Simulator
 					@context.beginPath()
 					@context.strokeStyle = color
 					if direction == Direction.Down
-						console.log "down"
 						@context.moveTo(start_x, KAGARI_TOP)
 						@context.lineTo(end_x, KAGARI_BOTTOM)
 					else
-						console.log "up"
 						@context.moveTo(start_x, KAGARI_BOTTOM)
 						@context.lineTo(end_x, KAGARI_TOP)
 					@context.stroke()
@@ -93,17 +102,13 @@ class Simulator
 						@context.beginPath()
 						@context.strokeStyle = color
 						if direction == Direction.Down
-							console.log "down"
 							@context.moveTo(start_x, KAGARI_TOP)
 							@context.lineTo(end_x, KAGARI_BOTTOM)
 						else
-							console.log "up"
 							@context.moveTo(start_x, KAGARI_BOTTOM)
 							@context.lineTo(end_x, KAGARI_TOP)
 						@context.stroke()
 
 					nextRound = koma.kagaru()
-
-				break
 
 module.exports = Simulator
