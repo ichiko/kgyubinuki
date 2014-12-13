@@ -541,3 +541,17 @@ describe "Yubinuki", ->
 			yb.addKoma(0, true)
 			expect(yb.validate()).toBe(false)
 			expect(yb.isValid()).toBe(false)
+
+		it "offset conflict (2)", ->
+			yb = new Yubinuki(6, 2, 10, false)
+			yb.addKoma(0, false)
+			yb.addKoma(0, false)
+			expect(yb.validate()).toBe(false)
+			expect(yb.isValid()).toBe(false)
+
+		it "offset not conflict", ->
+			yb = new Yubinuki(6, 2, 10, false)
+			yb.addKoma(0, true)
+			yb.addKoma(0, false)
+			expect(yb.validate()).toBe(true)
+			expect(yb.isValid()).toBe(true)

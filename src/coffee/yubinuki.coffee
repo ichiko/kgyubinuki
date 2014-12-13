@@ -134,16 +134,18 @@ class Yubinuki extends ValidatableModel
 	validate: ->
 		super
 
+		tobiNum = @config.tobi
+
 		if @komaArray.length == 0
 			@validateMessage.push "コマの設定がありません。"
 			return false
 
-		if @tobiNum < @komaArray.length
-			@validateMessage.push "コマの設定が、コマ数を越えています。"
+		if tobiNum < @komaArray.length
+			@validateMessage.push "コマの設定が、トビ数を越えています。"
 			return false
 
-		if @komaArray.length != 1
-			@validateMessage.push "コマの設定は、1またはコマ数と同じにする必要があります。"
+		if @komaArray.length != 1 and @komaArray.length != tobiNum
+			@validateMessage.push "コマの設定は、1またはトビ数と同じにする必要があります。(コマ数 : " + @komaArray.length + ", トビ数 : " + tobiNum + ")"
 			return false
 
 		for koma in @komaArray
@@ -153,9 +155,15 @@ class Yubinuki extends ValidatableModel
 		offsets_forward = []
 		offsets_backward = []
 		for koma in @komaArray
-			if (koma.forward and offsets_forward.indexOf(koma.offset) >= 0) or (!koma.forward and offsets_backward.indexOf(koma.offsets_backward) >= 0)
+			forward = koma.forward
+			offset = koma.offset
+			if (forward and offsets_forward.indexOf(offset) >= 0) or (!forward and offsets_backward.indexOf(offset) >= 0)
 				@validateMessage.push "同じ差し方向で、かがり始めの位置が重複しています。かがり始めの位置を変更するか、差し方向を変更してください。"
 				return false
+			if forward
+				offsets_forward.push offset
+			else
+				offsets_backward.push offset
 		return true
 
 	isValid: ->
@@ -163,5 +171,17 @@ class Yubinuki extends ValidatableModel
 			if !koma.isValid()
 				return false
 		super
+
+	getErrorMessages: ->
+		messages = []
+		if @validateMessage.length > 0
+			messages = messages.concat(@validateMessage)
+		for koma in @komaArray
+			if koma.validateMessage.length > 0
+				messages = messages.concat(koma.validateMessage)
+			for ito in koma.itoArray
+				if ito.validateMessage.length > 0
+					messages = messages.concat(ito.validateMessage)
+		return messages
 
 module.exports = {ValidatableModel, Ito, Koma, Yubinuki, Direction}
