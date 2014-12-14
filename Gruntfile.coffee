@@ -4,27 +4,10 @@ module.exports = (grunt) ->
 		watch:
 			coffee:
 				files: ['src/coffee/**/*.coffee']
-				tasks: ['coffee:compile', 'browserify:dist']
+				tasks: ['browserify:app']
 			jasmine:
 				files: ['src/coffee/**/*.coffee', 'spec/coffee/**/*.coffee']
-				tasks: ['coffee:spec', 'browserify:spec', 'jasmine']
-		coffee:
-			compile:
-				files: [
-					expand: true
-					cwd: 'src/coffee/'
-					src: ['**/*.coffee']
-					dest: 'src/js/'
-					ext: '.js'
-				]
-			spec:
-				files: [
-					expand: true
-					cwd: 'spec/coffee'
-					src: ['**/*.coffee']
-					dest: 'spec/obj/'
-					ext: '.js'
-				]
+				tasks: ['browserify:spec', 'jasmine']
 		bower:
 			install:
 				options:
@@ -35,12 +18,15 @@ module.exports = (grunt) ->
 					cleanTargetDir: true,
 					cleanBowerDir: false
 		browserify:
-			dist:
-				src: 'src/js/main.js',
-				dest: 'public/script/main.js'
+			app:
+				files: 'public/script/main.js': ['src/coffee/main.coffee']
+				options:
+					transform: ['coffeeify']
+					browserifyOptions:
+						extensions: ['.coffee']
 			spec:
-				src: 'spec/obj/*.js'
-				dest: 'spec/js/spec.js'
+				files: 'spec/js/spec.js': ['spec/coffee/**/*.coffee']
+				options: '<%= browserify.app.options %>'
 		jasmine:
 			model:
 				src: 'spec/dummy.js'
@@ -49,11 +35,10 @@ module.exports = (grunt) ->
 					helpers: 'lib/jquery/jquery.js'
 
 
-	grunt.loadNpmTasks 'grunt-contrib-coffee'
 	grunt.loadNpmTasks 'grunt-contrib-watch'
 	grunt.loadNpmTasks 'grunt-bower-task'
 	grunt.loadNpmTasks 'grunt-browserify'
 	grunt.loadNpmTasks 'grunt-contrib-jasmine'
 	grunt.registerTask 'default', ['watch']
-	grunt.registerTask 'spec', ['coffee:compile', 'coffee:spec', 'browserify:spec', 'jasmine']
+	grunt.registerTask 'spec', ['browserify:spec', 'jasmine']
 	return

@@ -1,4 +1,4 @@
-{ValidatableModel, Ito, Koma, Yubinuki, Direction} = require '../../src/js/yubinuki.js'
+{ValidatableModel, Ito, Koma, Yubinuki, Direction} = require '../../src/coffee/yubinuki'
 
 describe "ValidatableModel", ->
 	it "initialize", ->

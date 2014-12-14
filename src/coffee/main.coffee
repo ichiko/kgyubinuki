@@ -1,5 +1,5 @@
-Simulator = require('./simulator.js')
-{ValidatableModel, Ito, Koma, Yubinuki, Direction} = require '../../src/js/yubinuki.js'
+Simulator = require './simulator'
+{ValidatableModel, Ito, Koma, Yubinuki, Direction} = require './yubinuki'
 
 class YubinukiSimulatorVM
 	constructor: ->

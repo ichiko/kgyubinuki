@@ -1,6 +1,6 @@
 # simulator.coffee
 
-{ValidatableModel, Ito, Koma, Yubinuki, Direction} = require './yubinuki.js'
+{ValidatableModel, Ito, Koma, Yubinuki, Direction} = require './yubinuki'
 
 PADDING_LEFT = 60
 SIMULATOR_WIDTH = 400
