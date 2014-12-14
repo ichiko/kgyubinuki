@@ -1,9 +1,9 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var Direction, Ito, Koma, Simulator, ValidatableModel, Yubinuki, YubinukiSimulatorVM, _ref;
+var ItoVM, KomaVM, Simulator, YubinukiSimulatorVM, YubinukiVM, _ref;
 
 Simulator = require('./simulator');
 
-_ref = require('./yubinuki'), ValidatableModel = _ref.ValidatableModel, Ito = _ref.Ito, Koma = _ref.Koma, Yubinuki = _ref.Yubinuki, Direction = _ref.Direction;
+_ref = require('./viewmodel'), ItoVM = _ref.ItoVM, KomaVM = _ref.KomaVM, YubinukiVM = _ref.YubinukiVM;
 
 YubinukiSimulatorVM = (function() {
   function YubinukiSimulatorVM() {
@@ -12,6 +12,7 @@ YubinukiSimulatorVM = (function() {
     cc = canvas.getContext('2d');
     cc.save();
     this.simulator = new Simulator(canvas, cc);
+    this.yubinuki = ko.observable(new YubinukiVM(8, 2, 30, false));
   }
 
   YubinukiSimulatorVM.prototype.simulate = function() {
@@ -25,7 +26,7 @@ YubinukiSimulatorVM = (function() {
 
   YubinukiSimulatorVM.prototype.getYubinuki = function() {
     var koma, yubinuki;
-    yubinuki = new Yubinuki(8, 2, 30, false);
+    yubinuki = new YubinukiVM(8, 2, 30, false);
     koma = yubinuki.addKoma(0);
     koma.addIto('blue', 1);
     koma = yubinuki.addKoma(0, false);
@@ -57,7 +58,7 @@ console.log("hoge");
 
 
 
-},{"./simulator":2,"./yubinuki":3}],2:[function(require,module,exports){
+},{"./simulator":2,"./viewmodel":3}],2:[function(require,module,exports){
 var CHECKER_MAX, Direction, Ito, KAGARI_BOTTOM, KAGARI_TOP, Koma, PADDING_LEFT, SCALE_BOTTOM, SCALE_LABEL_TOP, SCALE_LINE_COLOR, SCALE_TEXT_COLOR, SCALE_TOP, SIDE_CUTOFF, SIMULATOR_WIDTH, Simulator, ValidatableModel, Yubinuki, _ref;
 
 _ref = require('./yubinuki'), ValidatableModel = _ref.ValidatableModel, Ito = _ref.Ito, Koma = _ref.Koma, Yubinuki = _ref.Yubinuki, Direction = _ref.Direction;
@@ -224,7 +225,123 @@ module.exports = Simulator;
 
 
 
-},{"./yubinuki":3}],3:[function(require,module,exports){
+},{"./yubinuki":4}],3:[function(require,module,exports){
+var Direction, Ito, ItoVM, Koma, KomaVM, NumericCompution, ValidatableModel, Yubinuki, YubinukiVM, _ref,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+_ref = require('./yubinuki'), ValidatableModel = _ref.ValidatableModel, Ito = _ref.Ito, Koma = _ref.Koma, Yubinuki = _ref.Yubinuki, Direction = _ref.Direction;
+
+NumericCompution = function(setter, getter, validFlag, owner) {
+  return {
+    read: function() {
+      var value;
+      value = getter();
+      if (isNaN(value)) {
+        value = parseInt(value.replace(/[^\d]/g, ""));
+        if (isNaN(value)) {
+          value = 0;
+        }
+      }
+      setter(value);
+      return value;
+    },
+    write: function(value) {
+      value = parseInt(value.replace(/[^\d]/g, ""));
+      if (isNaN(value)) {
+        return validFlag(false);
+      } else {
+        validFlag(true);
+        return setter(value);
+      }
+    },
+    owner: owner
+  };
+};
+
+ItoVM = (function(_super) {
+  __extends(ItoVM, _super);
+
+  function ItoVM(color, roundNum) {
+    ItoVM.__super__.constructor.call(this, color, roundNum);
+  }
+
+  return ItoVM;
+
+})(Ito);
+
+KomaVM = (function(_super) {
+  __extends(KomaVM, _super);
+
+  function KomaVM(offset, forward, config) {
+    KomaVM.__super__.constructor.call(this, offset, forward, config);
+  }
+
+  KomaVM.prototype.addIto = function(color, roundNum) {
+    var ito;
+    ito = new ItoVM(color, roundNum);
+    this.itoArray.push(ito);
+    return ito;
+  };
+
+  return KomaVM;
+
+})(Koma);
+
+YubinukiVM = (function(_super) {
+  __extends(YubinukiVM, _super);
+
+  function YubinukiVM(komaNum, tobiNum, resolution, kasane) {
+    var self;
+    YubinukiVM.__super__.constructor.call(this, komaNum, tobiNum, resolution, kasane);
+    this.availableResolutions = [10, 20, 30];
+    self = this;
+    this.fmKomaValid = ko.observable(true);
+    this.fmKomaNum = ko.computed(NumericCompution(function(value) {
+      return self.config.koma = value;
+    }, function() {
+      return self.config.koma;
+    }, this.fmKomaValid, this));
+    this.fmTobiValid = ko.observable(true);
+    this.fmTobiNum = ko.computed(NumericCompution(function(value) {
+      return self.config.tobi = value;
+    }, function() {
+      return self.config.tobi;
+    }, this.fmTobiValid, this));
+    this.fmResolution = ko.computed({
+      read: function() {
+        return this.config.resolution;
+      },
+      write: function(value) {
+        return this.config.resolution = value;
+      },
+      owner: this
+    });
+  }
+
+  YubinukiVM.prototype.addKoma = function(offset, forward) {
+    var koma;
+    if (forward == null) {
+      forward = true;
+    }
+    koma = new KomaVM(offset, forward, this.config);
+    this.komaArray.push(koma);
+    return koma;
+  };
+
+  return YubinukiVM;
+
+})(Yubinuki);
+
+exports.ItoVM = ItoVM;
+
+exports.KomaVM = KomaVM;
+
+exports.YubinukiVM = YubinukiVM;
+
+
+
+},{"./yubinuki":4}],4:[function(require,module,exports){
 var Direction, Ito, Koma, ValidatableModel, Yubinuki,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };

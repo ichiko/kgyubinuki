@@ -108,13 +108,26 @@
 			<p>
 			<canvas id="canvas" style="border: solid 1px black" width="600" height="120"></canvas>
 			</p>
-<!--
-			<p>
-			コマ: <input data-bind="value: division"/>
-			トビ: <input data-bind="value: jump" />
-			針数: <input data-bind="value: resolution"/>
-			</p>
 
+			<div data-bind="with: yubinuki">
+				<table>
+					<tbody><tr>
+						<td class="form-cell">
+							コマ: <input data-bind="value: fmKomaNum"/>
+							<p class="invalid" data-bind="visible: !fmKomaValid()">数値を入力してください。</p>
+						</td>
+						<td class="form-cell">
+							トビ: <input data-bind="value: fmTobiNum" />
+							<p class="invalid" data-bind="visible: !fmTobiValid()">数値を入力してください。</p>
+						</td>
+						<td class="form-cell">
+							コマ内の針数: <select data-bind="options: availableResolutions, value: fmResolution"/>
+						</td>
+					</tr></tbody>
+				</table>
+			</div>
+
+<!--
 			<button data-bind="click: addPattern">手順の追加</button>
 -->
 			<button data-bind="click: simulate">シミュレート</button>

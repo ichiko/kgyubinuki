@@ -1,5 +1,6 @@
 Simulator = require './simulator'
-{ValidatableModel, Ito, Koma, Yubinuki, Direction} = require './yubinuki'
+#{ValidatableModel, Ito, Koma, Yubinuki, Direction} = require './yubinuki'
+{ItoVM, KomaVM, YubinukiVM} = require './viewmodel'
 
 class YubinukiSimulatorVM
 	constructor: ->
@@ -8,6 +9,7 @@ class YubinukiSimulatorVM
 		cc.save()
 
 		@simulator = new Simulator(canvas, cc)
+		@yubinuki = ko.observable(new YubinukiVM(8, 2, 30, false))
 
 	simulate: ->
 		yubinuki = @getYubinuki()
@@ -18,7 +20,7 @@ class YubinukiSimulatorVM
 		cc.restore()
 
 	getYubinuki: ->
-		yubinuki = new Yubinuki(8, 2, 30, false)
+		yubinuki = new YubinukiVM(8, 2, 30, false)
 		koma = yubinuki.addKoma(0)
 		koma.addIto('blue', 1)
 		koma = yubinuki.addKoma(0, false)

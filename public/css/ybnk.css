@@ -7,3 +7,15 @@ body > .container {
 .invalid {
   color: red;
 }
+
+.form-cell {
+  padding: 8px;
+  width: 210px;
+  vertical-align: top;
+}
+
+.form-cell input {
+  width: 5em;
+  margin-left: 20px;
+  text-align: right;
+}
