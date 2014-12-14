@@ -26,13 +26,11 @@
 
     YubinukiSimulatorVM.prototype.getYubinuki = function() {
       var koma, yubinuki;
-      yubinuki = new Yubinuki(9, 3, 30, false);
+      yubinuki = new Yubinuki(8, 2, 30, false);
       koma = yubinuki.addKoma(0);
       koma.addIto('blue', 1);
-      koma = yubinuki.addKoma(1);
+      koma = yubinuki.addKoma(0, false);
       koma.addIto('red', 1);
-      koma = yubinuki.addKoma(2);
-      koma.addIto('green', 1);
       return yubinuki;
     };
 
@@ -62,7 +60,7 @@
 
 },{"../../src/js/yubinuki.js":3,"./simulator.js":2}],2:[function(require,module,exports){
 (function() {
-  var CHECKER_MAX, Direction, Ito, KAGARI_BOTTOM, KAGARI_TOP, Koma, PADDING_LEFT, SCALE_BOTTOM, SCALE_LABEL_TOP, SCALE_LINE_COLOR, SCALE_TEXT_COLOR, SCALE_TOP, SIMULATOR_WIDTH, Simulator, ValidatableModel, Yubinuki, _ref;
+  var CHECKER_MAX, Direction, Ito, KAGARI_BOTTOM, KAGARI_TOP, Koma, PADDING_LEFT, SCALE_BOTTOM, SCALE_LABEL_TOP, SCALE_LINE_COLOR, SCALE_TEXT_COLOR, SCALE_TOP, SIDE_CUTOFF, SIMULATOR_WIDTH, Simulator, ValidatableModel, Yubinuki, _ref;
 
   _ref = require('./yubinuki.js'), ValidatableModel = _ref.ValidatableModel, Ito = _ref.Ito, Koma = _ref.Koma, Yubinuki = _ref.Yubinuki, Direction = _ref.Direction;
 
@@ -86,6 +84,8 @@
 
   CHECKER_MAX = 100;
 
+  SIDE_CUTOFF = false;
+
   Simulator = (function() {
     function Simulator(canvas, context) {
       this.canvas = canvas;
@@ -104,7 +104,9 @@
       } else {
         this.drawSimple(yubinuki);
       }
-      return this.cutoff();
+      if (SIDE_CUTOFF) {
+        return this.cutoff();
+      }
     };
 
     Simulator.prototype.clearAll = function() {
@@ -133,8 +135,9 @@
     };
 
     Simulator.prototype.drawSimple = function(yubinuki) {
-      var anchor, chk, color, direction, end_x, koma, komaNum, komaWidth, loopNum, nextRound, offset, resolution, sasiEnd, sasiOffset, sasiStart, sasiWidth, start_x, _results;
+      var anchor, chk, color, direction, end_x, forward, koma, komaNum, komaWidth, loopNum, more_one, nextRound, offset, resolution, sasiEnd, sasiOffset, sasiStart, sasiWidth, start_x, tobiNum, _results;
       komaNum = yubinuki.config.koma;
+      tobiNum = yubinuki.config.tobi;
       resolution = yubinuki.config.resolution;
       komaWidth = SIMULATOR_WIDTH / komaNum;
       sasiWidth = komaWidth / resolution;
@@ -151,6 +154,7 @@
           for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
             koma = _ref1[_i];
             offset = koma.offset;
+            forward = koma.forward;
             color = koma.currentIto().color;
             nextRound = true;
             _results1.push((function() {
@@ -161,8 +165,15 @@
                 sasiStart = koma.sasiStartIndex();
                 sasiEnd = koma.sasiEndIndex();
                 sasiOffset = koma.roundCount * sasiWidth;
+                if (!forward) {
+                  sasiOffset *= -1;
+                }
                 start_x = PADDING_LEFT + sasiOffset + komaWidth * sasiStart;
                 end_x = PADDING_LEFT + sasiOffset + komaWidth * sasiEnd;
+                if (!forward) {
+                  start_x += SIMULATOR_WIDTH;
+                  end_x += SIMULATOR_WIDTH;
+                }
                 this.context.beginPath();
                 this.context.strokeStyle = color;
                 if (direction === Direction.Down) {
@@ -173,9 +184,18 @@
                   this.context.lineTo(end_x, KAGARI_TOP);
                 }
                 this.context.stroke();
+                more_one = false;
                 if (end_x >= PADDING_LEFT + SIMULATOR_WIDTH) {
+                  more_one = true;
                   start_x -= SIMULATOR_WIDTH;
                   end_x -= SIMULATOR_WIDTH;
+                }
+                if (!forward && end_x <= PADDING_LEFT) {
+                  more_one = true;
+                  start_x += SIMULATOR_WIDTH;
+                  end_x += SIMULATOR_WIDTH;
+                }
+                if (more_one) {
                   this.context.beginPath();
                   this.context.strokeStyle = color;
                   if (direction === Direction.Down) {
@@ -412,18 +432,19 @@
     };
 
     Yubinuki.prototype.validate = function() {
-      var koma, offsets_backward, offsets_forward, _i, _j, _len, _len1, _ref, _ref1;
+      var forward, koma, offset, offsets_backward, offsets_forward, tobiNum, _i, _j, _len, _len1, _ref, _ref1;
       Yubinuki.__super__.validate.apply(this, arguments);
+      tobiNum = this.config.tobi;
       if (this.komaArray.length === 0) {
         this.validateMessage.push("コマの設定がありません。");
         return false;
       }
-      if (this.tobiNum < this.komaArray.length) {
-        this.validateMessage.push("コマの設定が、コマ数を越えています。");
+      if (tobiNum < this.komaArray.length) {
+        this.validateMessage.push("コマの設定が、トビ数を越えています。");
         return false;
       }
-      if (this.komaArray.length !== 1) {
-        this.validateMessage.push("コマの設定は、1またはコマ数と同じにする必要があります。");
+      if (this.komaArray.length !== 1 && this.komaArray.length !== tobiNum) {
+        this.validateMessage.push("コマの設定は、1またはトビ数と同じにする必要があります。(コマ数 : " + this.komaArray.length + ", トビ数 : " + tobiNum + ")");
         return false;
       }
       _ref = this.komaArray;
@@ -438,9 +459,16 @@
       _ref1 = this.komaArray;
       for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
         koma = _ref1[_j];
-        if ((koma.forward && offsets_forward.indexOf(koma.offset) >= 0) || (!koma.forward && offsets_backward.indexOf(koma.offsets_backward) >= 0)) {
+        forward = koma.forward;
+        offset = koma.offset;
+        if ((forward && offsets_forward.indexOf(offset) >= 0) || (!forward && offsets_backward.indexOf(offset) >= 0)) {
           this.validateMessage.push("同じ差し方向で、かがり始めの位置が重複しています。かがり始めの位置を変更するか、差し方向を変更してください。");
           return false;
+        }
+        if (forward) {
+          offsets_forward.push(offset);
+        } else {
+          offsets_backward.push(offset);
         }
       }
       return true;

@@ -17,6 +17,8 @@ SCALE_TEXT_COLOR = '#000'
 
 CHECKER_MAX = 100
 
+SIDE_CUTOFF = false
+
 class Simulator
 	constructor: (@canvas, @context) ->
 
@@ -36,7 +38,8 @@ class Simulator
 		else
 			@drawSimple(yubinuki)
 
-		@cutoff()
+		if SIDE_CUTOFF
+			@cutoff()
 
 	clearAll: ->
 		@context.clearRect(0, 0, @canvas.width, @canvas.height);
@@ -60,6 +63,7 @@ class Simulator
 
 	drawSimple: (yubinuki) ->
 		komaNum = yubinuki.config.koma
+		tobiNum = yubinuki.config.tobi
 		resolution = yubinuki.config.resolution
 
 		komaWidth = SIMULATOR_WIDTH / komaNum
@@ -73,6 +77,7 @@ class Simulator
 
 			for koma in yubinuki.komaArray
 				offset = koma.offset
+				forward = koma.forward
 				color = koma.currentIto().color
 
 				nextRound = true
@@ -81,9 +86,15 @@ class Simulator
 					sasiStart = koma.sasiStartIndex()
 					sasiEnd = koma.sasiEndIndex()
 					sasiOffset = koma.roundCount * sasiWidth
+					if !forward
+						sasiOffset *= -1
 
 					start_x = PADDING_LEFT + sasiOffset + komaWidth * sasiStart
 					end_x = PADDING_LEFT + sasiOffset + komaWidth * sasiEnd
+
+					if !forward
+						start_x += SIMULATOR_WIDTH
+						end_x += SIMULATOR_WIDTH
 
 					@context.beginPath()
 					@context.strokeStyle = color
@@ -95,10 +106,17 @@ class Simulator
 						@context.lineTo(end_x, KAGARI_TOP)
 					@context.stroke()
 
+					more_one = false
 					if end_x >= PADDING_LEFT + SIMULATOR_WIDTH
+						more_one = true
 						start_x -= SIMULATOR_WIDTH
 						end_x -= SIMULATOR_WIDTH
+					if !forward and end_x <= PADDING_LEFT
+						more_one = true
+						start_x += SIMULATOR_WIDTH
+						end_x += SIMULATOR_WIDTH
 
+					if more_one
 						@context.beginPath()
 						@context.strokeStyle = color
 						if direction == Direction.Down

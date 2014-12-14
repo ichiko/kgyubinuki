@@ -18,13 +18,13 @@ class YubinukiSimulatorVM
 		cc.restore()
 
 	getYubinuki: ->
-		yubinuki = new Yubinuki(9, 3, 30, false)
+		yubinuki = new Yubinuki(8, 2, 30, false)
 		koma = yubinuki.addKoma(0)
 		koma.addIto('blue', 1)
-		koma = yubinuki.addKoma(1)
+		koma = yubinuki.addKoma(0, false)
 		koma.addIto('red', 1)
-		koma = yubinuki.addKoma(2)
-		koma.addIto('green', 1)
+#		koma = yubinuki.addKoma(2)
+#		koma.addIto('green', 1)
 		return yubinuki
 
 ko.applyBindings(new YubinukiSimulatorVM())
