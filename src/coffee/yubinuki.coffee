@@ -53,7 +53,6 @@ class Koma extends ValidatableModel
 		else
 			@direction = Direction.Down
 
-		# TODO 開き差しのとき計算できないので、負数の場合は最小公倍数を加算して計算する必要がある
 		if (@sasiCount % @config.koma == 0) and (@sasiCount % @config.tobi == 0)
 			@sasiCount = 0
 			@roundCount += 1
