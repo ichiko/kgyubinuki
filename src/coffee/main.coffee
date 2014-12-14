@@ -27,7 +27,9 @@ class YubinukiSimulatorVM
 
 ko.applyBindings(new YubinukiSimulatorVM())
 
-#------
+# ===============
+#  色一覧 開閉
+# ===============
 
 $('#colorpallet').hide()
 
