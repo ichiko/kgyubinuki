@@ -57,7 +57,7 @@ class Koma extends ValidatableModel
 		@roundScale = 1
 
 		for ito in @getItoArray()
-			ito.prepare
+			ito.prepare()
 
 	# 戻り値：true(段が変わらない), false(次は段が変わる)
 	kagaru: ->
@@ -187,12 +187,18 @@ class Yubinuki extends ValidatableModel
 			type = koma.type
 			offset = koma.offset
 			if (type == SasiType.Nami and offsets_nami.indexOf(offset) >= 0) or (type == SasiType.Hiraki and offsets_hiraki.indexOf(offset) >= 0)
-				@validateMessage.push "同じ差し方向で、かがり始めの位置が重複しています。かがり始めの位置を変更するか、差し方向を変更してください。"
+				@validateMessage.push "同じ刺し方向で、かがり始めの位置が重複しています。かがり始めの位置を変更するか、差し方向を変更してください。"
 				return false
 			if type == SasiType.Nami
 				offsets_nami.push offset
 			else
 				offsets_hiraki.push offset
+
+		for offset in offsets_nami
+			if offsets_hiraki.indexOf(offset + 1) >= 0
+				@validateMessage.push "異る刺し方向で、かがるコマの位置が重複しています。かがり始めの位置を変更するか、差し方向を変更してください。"
+				return false
+
 		return true
 
 	isValid: ->

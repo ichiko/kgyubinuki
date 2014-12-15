@@ -477,6 +477,18 @@ describe "Yubinuki", ->
 			yb.addKoma(0, SasiType.Nami)
 			expect(yb.prepare()).toBe(false)
 
+		it "offset conflict (2)", ->
+			yb = new Yubinuki(6, 2, 10, false)
+			yb.addKoma(0, SasiType.Hiraki)
+			yb.addKoma(0, SasiType.Hiraki)
+			expect(yb.prepare()).toBe(false)
+
+		it "offset conflict (3)", ->
+			yb = new Yubinuki(6, 2, 10, false)
+			yb.addKoma(0, SasiType.Nami)
+			yb.addKoma(1, SasiType.Hiraki)
+			expect(yb.prepare()).toBe(false)
+
 	it "addKoma", ->
 		yb = new Yubinuki(6, 2, 10, false)
 		yb.addKoma(0, SasiType.Nami)
@@ -546,6 +558,13 @@ describe "Yubinuki", ->
 			yb = new Yubinuki(6, 2, 10, false)
 			yb.addKoma(0, SasiType.Hiraki)
 			yb.addKoma(0, SasiType.Hiraki)
+			expect(yb.validate()).toBe(false)
+			expect(yb.isValid()).toBe(false)
+
+		it "offset conflict (3)", ->
+			yb = new Yubinuki(6, 2, 10, false)
+			yb.addKoma(0, SasiType.Nami)
+			yb.addKoma(1, SasiType.Hiraki)
 			expect(yb.validate()).toBe(false)
 			expect(yb.isValid()).toBe(false)
 
