@@ -151,21 +151,25 @@ class YubinukiVM extends Yubinuki
 		}))
 
 		@fmTobiValid = ko.observable(true)
+		@fmTobi = ko.observable(tobiNum)
 		@fmTobiNum = ko.computed(NumericCompution({
 		read: ->
 			self.config.tobi
 		write: (value) ->
 			self.config.tobi = value
+			self.fmTobi(value)
 			self.updateConfig()
 		validFlag: @fmTobiValid
 		owner: @
 		}))
 
-		@fmResolution = ko.computed({
+		@fmResolution = ko.observable(resolution)
+		@fmResolutionNum = ko.computed({
 		read: ->
 			@config.resolution
 		write: (value) ->
 			@config.resolution = value
+			@fmResolution(value)
 		owner: @
 		})
 

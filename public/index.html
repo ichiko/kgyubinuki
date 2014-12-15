@@ -4,10 +4,14 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>加賀ゆびぬき　刺し模様シミュレータ</title>
 
-	<link href="lib/bootstrap/bootstrap.min.css" rel="stylesheet">
-	<link href="css/ybnk.css" rel="stylesheet">
+	<link href="lib/bootstrap/bootstrap.min.css" rel="stylesheet"/>
+	<link href="lib/jquery-ui/themes/base/all.css" rel="stylesheet"/>
+	<link href="css/ybnk.css" rel="stylesheet"/>
 
+	<script type="text/javascript" src="lib/jquery/jquery.js"></script>
+	<script type="text/javascript" src="lib/jquery-ui/jquery-ui.min.js"></script>
 	<script type="text/javascript" src="lib/knockoutjs/knockout.js"></script>
+	<script type="text/javascript" src="lib/knockout-jqueryui/knockout-jqueryui.min.js"></script>
 
 </head>
 <body>
@@ -121,12 +125,17 @@
 							<p class="invalid" data-bind="visible: !fmTobiValid()">数値を入力してください。</p>
 						</td>
 						<td class="form-cell">
-							コマ内の針数: <select data-bind="options: availableResolutions, value: fmResolution"/>
+							コマ内の針数: <select data-bind="options: availableResolutions, value: fmResolutionNum"/>
 						</td>
 					</tr></tbody>
 				</table>
 			</div>
 
+			<div class="simulator-option">
+				<input type="checkbox" data-bind="checked: stepSimulation">途中までシミュレート</input>
+				<span data-bind="text: stepNum"></span>段
+				<div id="slider" class="slider" data-bind="slider: { value: stepNum, realtime: true, max: stepMax }"></div>
+			</div>
 <!--
 			<button data-bind="click: addPattern">手順の追加</button>
 -->
@@ -218,8 +227,6 @@
 
 		</div><!-- .container -->
 
-	<script type="text/javascript" src="lib/jquery/jquery.js"></script>
-	<script type="text/javascript" src="lib/bootstrap/bootstrap.min.js"></script>
 	<script type="text/javascript" src="script/main.js"></script>
 
 </body>

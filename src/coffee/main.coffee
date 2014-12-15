@@ -1,14 +1,29 @@
 Simulator = require './simulator'
 {ItoVM, KomaVM, YubinukiVM, SasiType} = require './viewmodel'
 
+# ===============
+#  Application
+# ===============
+
 class YubinukiSimulatorVM
 	constructor: ->
 		canvas = document.getElementById('canvas');
 		cc = canvas.getContext('2d');
 		cc.save()
 
+		self = @
+
 		@simulator = new Simulator(canvas, cc)
 		@yubinuki = ko.observable(new YubinukiVM(8, 2, 30, false))
+		@stepSimulation = ko.observable(false)
+		@stepNum = ko.observable(10)
+		@stepMax = ko.computed( ->
+			yubinuki = self.yubinuki()
+			# TODO Koma設定がひとつしかない場合の考慮
+			max = yubinuki.fmTobi() * yubinuki.fmResolution()
+			console.log "stepMax", max
+			return max
+		, @)
 
 		# TEST
 		yb = @yubinuki()

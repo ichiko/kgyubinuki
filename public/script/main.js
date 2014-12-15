@@ -7,12 +7,22 @@ _ref = require('./viewmodel'), ItoVM = _ref.ItoVM, KomaVM = _ref.KomaVM, Yubinuk
 
 YubinukiSimulatorVM = (function() {
   function YubinukiSimulatorVM() {
-    var canvas, cc, koma, yb;
+    var canvas, cc, koma, self, yb;
     canvas = document.getElementById('canvas');
     cc = canvas.getContext('2d');
     cc.save();
+    self = this;
     this.simulator = new Simulator(canvas, cc);
     this.yubinuki = ko.observable(new YubinukiVM(8, 2, 30, false));
+    this.stepSimulation = ko.observable(false);
+    this.stepNum = ko.observable(10);
+    this.stepMax = ko.computed(function() {
+      var max, yubinuki;
+      yubinuki = self.yubinuki();
+      max = yubinuki.fmTobi() * yubinuki.fmResolution();
+      console.log("stepMax", max);
+      return max;
+    }, this);
     yb = this.yubinuki();
     yb.startManualSet();
     yb.clearKoma();
@@ -431,23 +441,27 @@ YubinukiVM = (function(_super) {
       owner: this
     }));
     this.fmTobiValid = ko.observable(true);
+    this.fmTobi = ko.observable(tobiNum);
     this.fmTobiNum = ko.computed(NumericCompution({
       read: function() {
         return self.config.tobi;
       },
       write: function(value) {
         self.config.tobi = value;
+        self.fmTobi(value);
         return self.updateConfig();
       },
       validFlag: this.fmTobiValid,
       owner: this
     }));
-    this.fmResolution = ko.computed({
+    this.fmResolution = ko.observable(resolution);
+    this.fmResolutionNum = ko.computed({
       read: function() {
         return this.config.resolution;
       },
       write: function(value) {
-        return this.config.resolution = value;
+        this.config.resolution = value;
+        return this.fmResolution(value);
       },
       owner: this
     });

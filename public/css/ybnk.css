@@ -20,6 +20,16 @@ body > .container {
   text-align: right;
 }
 
+.simulator-option {
+  padding: 8px;
+}
+
+.simulator-option .slider {
+  margin: 8px;
+  margin-left: 10px;
+  width: 30em;
+}
+
 .number{
   /*width: 5em;*/
   text-align: right;

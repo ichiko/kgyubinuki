@@ -17,6 +17,8 @@
   "dependencies": {
     "knockoutjs": "~3.2.0",
     "bootstrap": "~3.3.1",
+    "jquery-ui": "~1.11.2",
+    "knockout-jqueryui": "~2.0.1"
   },
   "exportsOverride": {
     "bootstrap": {
@@ -24,6 +26,19 @@
         "dist/css/bootstrap.min.css",
         "dist/fonts/*",
         "dist/js/bootstrap.min.js"
+      ]
+    },
+    "jquery-ui": {
+      "/": [
+        "jquery-ui.min.js"
+      ],
+      "/themes/base": [
+        "themes/base"
+      ]
+    },
+    "knockout-jqueryui": {
+      "/": [
+        "knockout-jqueryui.min.js"
       ]
     }
   }
