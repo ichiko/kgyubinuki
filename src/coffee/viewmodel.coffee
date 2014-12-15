@@ -33,6 +33,10 @@ SasiTypeViewModel = [
 	{ typeName: "開き刺し", typeId: 1 }
 	]
 
+DefaultIto =
+	Color: 'gray'
+	Round: 1
+
 class ItoVM extends Ito
 	constructor: (color, roundNum) ->
 		super color, roundNum
@@ -65,7 +69,7 @@ class ItoVM extends Ito
 		}))
 
 class KomaVM extends Koma
-	constructor: (offset, type, config) ->
+	constructor: (offset, type, config, setDefault = true) ->
 		super offset, type, config
 
 		self = @
@@ -93,12 +97,11 @@ class KomaVM extends Koma
 		@itoArray = ko.observableArray()
 
 		@addNewIto = ->
-			self.addIto('gray', 1)
+			self.addIto(DefaultIto.Color, DefaultIto.Round)
 
 		@removeIto = (ito) ->
 			self.itoArray.remove(ito)
 
-		# TODO 移動の処理が異様に遅い
 		@moveUp = (ito) ->
 			itoArray = self.itoArray
 			index = itoArray.indexOf(ito)
@@ -114,6 +117,10 @@ class KomaVM extends Koma
 				itoArray.remove(ito)
 				itoArray.splice(index + 1, 0, ito)
 
+		if setDefault
+			# add Default one
+			@addNewIto()
+
 	getItoArray: ->
 		@itoArray()
 
@@ -128,6 +135,8 @@ class YubinukiVM extends Yubinuki
 
 		@availableResolutions = [10, 20, 30]
 		@availableSasiTypes = SasiTypeViewModel
+
+		@komaArray = ko.observableArray()
 
 		self = @
 
@@ -147,6 +156,7 @@ class YubinukiVM extends Yubinuki
 			self.config.tobi
 		write: (value) ->
 			self.config.tobi = value
+			self.updateConfig()
 		validFlag: @fmTobiValid
 		owner: @
 		}))
@@ -159,29 +169,43 @@ class YubinukiVM extends Yubinuki
 		owner: @
 		})
 
-		@komaArray = ko.observableArray()
+	startManualSet: ->
+		@manualMode = true
+
+	endManualSet: ->
+		@manualMode = false
+
+	clearKoma: ->
+		@komaArray.removeAll()
 
 	getKomaArray: ->
 		@komaArray()
 
-	addKoma: (offset, type = SasiType.Nami) ->
-		koma = new KomaVM(offset, type, @config)
-		@getKomaArray().push koma
+	addKoma: (offset, type = SasiType.Nami, setDefault = true) ->
+		koma = new KomaVM(offset, type, @config, setDefault)
+		@komaArray.push koma
 		return koma
 
 	updateConfig: ->
-		komaLen = @komaArray().len
-		if komaLen < @config.koma
-			need = @config.koma - komaLen
+		if @manualMode
+			return
+		komaLen = @komaArray().length
+		tobi = @config.tobi
+		console.log "updateConfig", komaLen, @config.tobi
+		if komaLen < tobi
+			console.log "updateConfig", "too short"
+			need = tobi - komaLen
 			for i in [1..need]
-				@addKoma(offset)
-		else if komaLen > @config.koma
-			remove = komaLen - @config.koma
+				@addKoma(0)
+		else if komaLen > tobi
+			console.log "updateConfig", "too long"
+			remove = komaLen - tobi
 			for i in [0..remove - 1]
-				koma = komaArray[komaLen - i]
-				komaArray.remove(koma)
+				koma = @komaArray[komaLen - i]
+				@komaArray.remove(koma)
 
 exports.ItoVM = ItoVM
 exports.KomaVM = KomaVM
 exports.YubinukiVM = YubinukiVM
 exports.SasiType = SasiType
+exports.DefaultIto = DefaultIto

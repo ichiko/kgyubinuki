@@ -14,11 +14,14 @@ YubinukiSimulatorVM = (function() {
     this.simulator = new Simulator(canvas, cc);
     this.yubinuki = ko.observable(new YubinukiVM(8, 2, 30, false));
     yb = this.yubinuki();
-    koma = yb.addKoma(0);
+    yb.startManualSet();
+    yb.clearKoma();
+    koma = yb.addKoma(0, SasiType.Nami, false);
     koma.addIto('blue', 5);
     koma.addIto('skyblue', 5);
-    koma = yb.addKoma(1, SasiType.Hiraki);
+    koma = yb.addKoma(1, SasiType.Hiraki, false);
     koma.addIto('red', 1);
+    yb.endManualSet();
   }
 
   YubinukiSimulatorVM.prototype.simulate = function() {
@@ -227,7 +230,7 @@ module.exports = Simulator;
 
 
 },{"./yubinuki":4}],3:[function(require,module,exports){
-var Direction, Ito, ItoVM, Koma, KomaVM, NumericCompution, SasiType, SasiTypeViewModel, ValidatableModel, Yubinuki, YubinukiVM, _ref,
+var DefaultIto, Direction, Ito, ItoVM, Koma, KomaVM, NumericCompution, SasiType, SasiTypeViewModel, ValidatableModel, Yubinuki, YubinukiVM, _ref,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -277,6 +280,11 @@ SasiTypeViewModel = [
   }
 ];
 
+DefaultIto = {
+  Color: 'gray',
+  Round: 1
+};
+
 ItoVM = (function(_super) {
   __extends(ItoVM, _super);
 
@@ -322,8 +330,11 @@ ItoVM = (function(_super) {
 KomaVM = (function(_super) {
   __extends(KomaVM, _super);
 
-  function KomaVM(offset, type, config) {
+  function KomaVM(offset, type, config, setDefault) {
     var self;
+    if (setDefault == null) {
+      setDefault = true;
+    }
     KomaVM.__super__.constructor.call(this, offset, type, config);
     self = this;
     this.fmOffsetValid = ko.observable(true);
@@ -351,7 +362,7 @@ KomaVM = (function(_super) {
     });
     this.itoArray = ko.observableArray();
     this.addNewIto = function() {
-      return self.addIto('gray', 1);
+      return self.addIto(DefaultIto.Color, DefaultIto.Round);
     };
     this.removeIto = function(ito) {
       return self.itoArray.remove(ito);
@@ -375,6 +386,9 @@ KomaVM = (function(_super) {
         return itoArray.splice(index + 1, 0, ito);
       }
     };
+    if (setDefault) {
+      this.addNewIto();
+    }
   }
 
   KomaVM.prototype.getItoArray = function() {
@@ -400,6 +414,7 @@ YubinukiVM = (function(_super) {
     YubinukiVM.__super__.constructor.call(this, komaNum, tobiNum, resolution, kasane);
     this.availableResolutions = [10, 20, 30];
     this.availableSasiTypes = SasiTypeViewModel;
+    this.komaArray = ko.observableArray();
     self = this;
     this.fmKomaValid = ko.observable(true);
     this.fmKomaNum = ko.computed(NumericCompution({
@@ -418,7 +433,8 @@ YubinukiVM = (function(_super) {
         return self.config.tobi;
       },
       write: function(value) {
-        return self.config.tobi = value;
+        self.config.tobi = value;
+        return self.updateConfig();
       },
       validFlag: this.fmTobiValid,
       owner: this
@@ -432,39 +448,60 @@ YubinukiVM = (function(_super) {
       },
       owner: this
     });
-    this.komaArray = ko.observableArray();
   }
+
+  YubinukiVM.prototype.startManualSet = function() {
+    return this.manualMode = true;
+  };
+
+  YubinukiVM.prototype.endManualSet = function() {
+    return this.manualMode = false;
+  };
+
+  YubinukiVM.prototype.clearKoma = function() {
+    return this.komaArray.removeAll();
+  };
 
   YubinukiVM.prototype.getKomaArray = function() {
     return this.komaArray();
   };
 
-  YubinukiVM.prototype.addKoma = function(offset, type) {
+  YubinukiVM.prototype.addKoma = function(offset, type, setDefault) {
     var koma;
     if (type == null) {
       type = SasiType.Nami;
     }
-    koma = new KomaVM(offset, type, this.config);
-    this.getKomaArray().push(koma);
+    if (setDefault == null) {
+      setDefault = true;
+    }
+    koma = new KomaVM(offset, type, this.config, setDefault);
+    this.komaArray.push(koma);
     return koma;
   };
 
   YubinukiVM.prototype.updateConfig = function() {
-    var i, koma, komaLen, need, remove, _i, _j, _ref1, _results, _results1;
-    komaLen = this.komaArray().len;
-    if (komaLen < this.config.koma) {
-      need = this.config.koma - komaLen;
+    var i, koma, komaLen, need, remove, tobi, _i, _j, _ref1, _results, _results1;
+    if (this.manualMode) {
+      return;
+    }
+    komaLen = this.komaArray().length;
+    tobi = this.config.tobi;
+    console.log("updateConfig", komaLen, this.config.tobi);
+    if (komaLen < tobi) {
+      console.log("updateConfig", "too short");
+      need = tobi - komaLen;
       _results = [];
       for (i = _i = 1; 1 <= need ? _i <= need : _i >= need; i = 1 <= need ? ++_i : --_i) {
-        _results.push(this.addKoma(offset));
+        _results.push(this.addKoma(0));
       }
       return _results;
-    } else if (komaLen > this.config.koma) {
-      remove = komaLen - this.config.koma;
+    } else if (komaLen > tobi) {
+      console.log("updateConfig", "too long");
+      remove = komaLen - tobi;
       _results1 = [];
       for (i = _j = 0, _ref1 = remove - 1; 0 <= _ref1 ? _j <= _ref1 : _j >= _ref1; i = 0 <= _ref1 ? ++_j : --_j) {
-        koma = komaArray[komaLen - i];
-        _results1.push(komaArray.remove(koma));
+        koma = this.komaArray[komaLen - i];
+        _results1.push(this.komaArray.remove(koma));
       }
       return _results1;
     }
@@ -481,6 +518,8 @@ exports.KomaVM = KomaVM;
 exports.YubinukiVM = YubinukiVM;
 
 exports.SasiType = SasiType;
+
+exports.DefaultIto = DefaultIto;
 
 
 

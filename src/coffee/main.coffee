@@ -12,11 +12,14 @@ class YubinukiSimulatorVM
 
 		# TEST
 		yb = @yubinuki()
-		koma = yb.addKoma(0)
+		yb.startManualSet()
+		yb.clearKoma()
+		koma = yb.addKoma(0, SasiType.Nami, false)
 		koma.addIto('blue', 5)
 		koma.addIto('skyblue', 5)
-		koma = yb.addKoma(1, SasiType.Hiraki)
+		koma = yb.addKoma(1, SasiType.Hiraki, false)
 		koma.addIto('red', 1)
+		yb.endManualSet()
 
 	simulate: ->
 		yubinuki = @getYubinuki()
@@ -27,12 +30,13 @@ class YubinukiSimulatorVM
 		cc.restore()
 
 	getYubinuki: ->
-		yubinuki = new YubinukiVM(8, 2, 30, false)
-		koma = yubinuki.addKoma(0)
-		koma.addIto('blue', 1)
-		koma = yubinuki.addKoma(0, false)
-		koma.addIto('red', 1)
-		return yubinuki
+#		yubinuki = new YubinukiVM(8, 2, 30, false)
+#		koma = yubinuki.addKoma(0)
+#		koma.addIto('blue', 1)
+#		koma = yubinuki.addKoma(0, false)
+#		koma.addIto('red', 1)
+#		return yubinuki
+		@yubinuki()
 
 ko.applyBindings(new YubinukiSimulatorVM())
 
