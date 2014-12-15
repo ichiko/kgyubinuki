@@ -8,3 +8,7 @@ vendor
 src/js
 spec/js
 spec/obj
+
+public/
+!public/css
+!public/index.html
