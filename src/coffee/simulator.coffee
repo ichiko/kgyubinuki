@@ -26,8 +26,9 @@ class Simulator
 		komaNum = yubinuki.config.koma
 		kasane = yubinuki.kasane
 
-		# TODO validate
-		yubinuki.prepare()
+		if !yubinuki.prepare()
+			alert(yubinuki.getErrorMessages())
+			return
 
 		@clearAll()
 

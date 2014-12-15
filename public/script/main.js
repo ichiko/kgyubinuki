@@ -98,7 +98,10 @@ Simulator = (function() {
     var kasane, komaNum;
     komaNum = yubinuki.config.koma;
     kasane = yubinuki.kasane;
-    yubinuki.prepare();
+    if (!yubinuki.prepare()) {
+      alert(yubinuki.getErrorMessages());
+      return;
+    }
     this.clearAll();
     this.drawScale(komaNum);
     if (kasane) {
@@ -486,9 +489,7 @@ YubinukiVM = (function(_super) {
     }
     komaLen = this.komaArray().length;
     tobi = this.config.tobi;
-    console.log("updateConfig", komaLen, this.config.tobi);
     if (komaLen < tobi) {
-      console.log("updateConfig", "too short");
       need = tobi - komaLen;
       _results = [];
       for (i = _i = 1; 1 <= need ? _i <= need : _i >= need; i = 1 <= need ? ++_i : --_i) {
@@ -496,7 +497,6 @@ YubinukiVM = (function(_super) {
       }
       return _results;
     } else if (komaLen > tobi) {
-      console.log("updateConfig", "too long");
       remove = komaLen - tobi;
       _results1 = [];
       for (i = _j = 0, _ref1 = remove - 1; 0 <= _ref1 ? _j <= _ref1 : _j >= _ref1; i = 0 <= _ref1 ? ++_j : --_j) {
@@ -619,7 +619,7 @@ Koma = (function(_super) {
     _results = [];
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       ito = _ref[_i];
-      _results.push(ito.prepare);
+      _results.push(ito.prepare());
     }
     return _results;
   };
@@ -762,7 +762,7 @@ Yubinuki = (function(_super) {
   };
 
   Yubinuki.prototype.validate = function() {
-    var koma, komaArray, offset, offsets_hiraki, offsets_nami, tobiNum, type, _i, _j, _len, _len1;
+    var koma, komaArray, offset, offsets_hiraki, offsets_nami, tobiNum, type, _i, _j, _k, _len, _len1, _len2;
     Yubinuki.__super__.validate.apply(this, arguments);
     tobiNum = this.config.tobi;
     komaArray = this.getKomaArray();
@@ -791,13 +791,20 @@ Yubinuki = (function(_super) {
       type = koma.type;
       offset = koma.offset;
       if ((type === SasiType.Nami && offsets_nami.indexOf(offset) >= 0) || (type === SasiType.Hiraki && offsets_hiraki.indexOf(offset) >= 0)) {
-        this.validateMessage.push("同じ差し方向で、かがり始めの位置が重複しています。かがり始めの位置を変更するか、差し方向を変更してください。");
+        this.validateMessage.push("同じ刺し方向で、かがり始めの位置が重複しています。かがり始めの位置を変更するか、差し方向を変更してください。");
         return false;
       }
       if (type === SasiType.Nami) {
         offsets_nami.push(offset);
       } else {
         offsets_hiraki.push(offset);
+      }
+    }
+    for (_k = 0, _len2 = offsets_nami.length; _k < _len2; _k++) {
+      offset = offsets_nami[_k];
+      if (offsets_hiraki.indexOf(offset + 1) >= 0) {
+        this.validateMessage.push("異る刺し方向で、かがるコマの位置が重複しています。かがり始めの位置を変更するか、差し方向を変更してください。");
+        return false;
       }
     }
     return true;
