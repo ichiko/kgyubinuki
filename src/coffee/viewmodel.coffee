@@ -96,25 +96,30 @@ class KomaVM extends Koma
 			self.addIto('gray', 1)
 
 		@removeIto = (ito) ->
-			self.getItoArray().remove(ito)
+			self.itoArray.remove(ito)
 
+		# TODO 移動の処理が異様に遅い
 		@moveUp = (ito) ->
-			itoArray = self.getItoArray()
+			itoArray = self.itoArray
 			index = itoArray.indexOf(ito)
 			if index > 0
 				itoArray.remove(ito)
 				itoArray.splice(index - 1, 0, ito)
 
 		@moveDown = (ito) ->
-			itoArray = self.getItoArray()
+			itoArray = self.itoArray
+			itoLen = self.itoArray().length
 			index = itoArray.indexOf(ito)
-			if index > -1 and index < itoArray().length - 1
+			if index > -1 and index < itoLen - 1
 				itoArray.remove(ito)
 				itoArray.splice(index + 1, 0, ito)
 
+	getItoArray: ->
+		@itoArray()
+
 	addIto: (color, roundNum) ->
 		ito = new ItoVM(color, roundNum)
-		@getItoArray().push ito
+		@itoArray.push ito
 		return ito
 
 class YubinukiVM extends Yubinuki
@@ -156,23 +161,24 @@ class YubinukiVM extends Yubinuki
 
 		@komaArray = ko.observableArray()
 
+	getKomaArray: ->
+		@komaArray()
+
 	addKoma: (offset, type = SasiType.Nami) ->
 		koma = new KomaVM(offset, type, @config)
 		@getKomaArray().push koma
 		return koma
 
 	updateConfig: ->
-		komaArray = @getKomaArray()
-
-		if komaArray.length < @config.koma
-			need = @config.koma - komaArray.length
+		komaLen = @komaArray().len
+		if komaLen < @config.koma
+			need = @config.koma - komaLen
 			for i in [1..need]
 				@addKoma(offset)
-		else if komaArray.length > @config.koma
-			len = komaArray.length
-			remove = komaArray.length - @config.koma
+		else if komaLen > @config.koma
+			remove = komaLen - @config.koma
 			for i in [0..remove - 1]
-				koma = komaArray[len - i]
+				koma = komaArray[komaLen - i]
 				komaArray.remove(koma)
 
 exports.ItoVM = ItoVM
