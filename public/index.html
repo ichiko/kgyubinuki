@@ -158,8 +158,10 @@
 						<td></td>
 						<!-- /ko -->
 						<td>
+						<!-- ko if: koma.itoArray().length - 1 -->
 							<a href="#" data-bind="click: koma.moveUp">▲</a>
 							<a href="#" data-bind="click: koma.moveDown">▼</a>
+						<!-- /ko -->
 						</td>
 						<td>
 							<input data-bind="value: ito.fmColor" />
