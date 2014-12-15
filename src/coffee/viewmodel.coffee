@@ -2,24 +2,24 @@
 
 {ValidatableModel, Ito, Koma, Yubinuki, Direction} = require './yubinuki'
 
-NumericCompution = (setter, getter, validFlag, owner) ->
+NumericCompution = (arg) ->
 	{
 		read: ->
-			value = getter()
+			value = arg.read()
 			if isNaN(value)
 				value = parseInt(value.replace(/[^\d]/g, ""))
 				if isNaN(value)
 					value = 0
-			setter(value)
+			arg.write(value)
 			return value
 		write: (value) ->
 			value = parseInt(value.replace(/[^\d]/g, ""))
 			if isNaN(value)
-				validFlag(false)
+				arg.validFlag(false)
 			else
-				validFlag(true)
-				setter(value)
-		owner: owner
+				arg.validFlag(true)
+				arg.write(value)
+		owner: arg.owner
 	}
 
 class ItoVM extends Ito
@@ -32,7 +32,7 @@ class KomaVM extends Koma
 
 	addIto: (color, roundNum) ->
 		ito = new ItoVM(color, roundNum)
-		@itoArray.push ito
+		@getItoArray().push ito
 		return ito
 
 class YubinukiVM extends Yubinuki
@@ -44,18 +44,24 @@ class YubinukiVM extends Yubinuki
 		self = @
 
 		@fmKomaValid = ko.observable(true)
-		@fmKomaNum = ko.computed(NumericCompution((value)->
+		@fmKomaNum = ko.computed(NumericCompution({
+		read: ->
+			self.config.koma
+		write: (value) ->
 			self.config.koma = value
-		, ->
-			return self.config.koma
-		, @fmKomaValid, @))
+		validFlag: @fmKomaValid
+		owner: @
+		}))
 
 		@fmTobiValid = ko.observable(true)
-		@fmTobiNum = ko.computed(NumericCompution((value)->
+		@fmTobiNum = ko.computed(NumericCompution({
+		read: ->
+			self.config.tobi
+		write: (value) ->
 			self.config.tobi = value
-		, ->
-			return self.config.tobi
-		, @fmTobiValid, @))
+		validFlag: @fmTobiValid
+		owner: @
+		}))
 
 		@fmResolution = ko.computed({
 		read: ->
@@ -69,6 +75,20 @@ class YubinukiVM extends Yubinuki
 		koma = new KomaVM(offset, forward, @config)
 		@komaArray.push koma
 		return koma
+
+	updateConfig: ->
+		komaArray = @getKomaArray()
+
+		if komaArray.length < @config.koma
+			need = @config.koma - komaArray.length
+			for i in [1..need]
+				@addKoma(offset)
+		else if komaArray.length > @config.koma
+			len = komaArray.length
+			remove = komaArray.length - @config.koma
+			for i in [0..remove - 1]
+				koma = komaArray[len - i]
+				komaArray.remove(koma)
 
 exports.ItoVM = ItoVM
 exports.KomaVM = KomaVM

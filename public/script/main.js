@@ -232,30 +232,30 @@ var Direction, Ito, ItoVM, Koma, KomaVM, NumericCompution, ValidatableModel, Yub
 
 _ref = require('./yubinuki'), ValidatableModel = _ref.ValidatableModel, Ito = _ref.Ito, Koma = _ref.Koma, Yubinuki = _ref.Yubinuki, Direction = _ref.Direction;
 
-NumericCompution = function(setter, getter, validFlag, owner) {
+NumericCompution = function(arg) {
   return {
     read: function() {
       var value;
-      value = getter();
+      value = arg.read();
       if (isNaN(value)) {
         value = parseInt(value.replace(/[^\d]/g, ""));
         if (isNaN(value)) {
           value = 0;
         }
       }
-      setter(value);
+      arg.write(value);
       return value;
     },
     write: function(value) {
       value = parseInt(value.replace(/[^\d]/g, ""));
       if (isNaN(value)) {
-        return validFlag(false);
+        return arg.validFlag(false);
       } else {
-        validFlag(true);
-        return setter(value);
+        arg.validFlag(true);
+        return arg.write(value);
       }
     },
-    owner: owner
+    owner: arg.owner
   };
 };
 
@@ -280,7 +280,7 @@ KomaVM = (function(_super) {
   KomaVM.prototype.addIto = function(color, roundNum) {
     var ito;
     ito = new ItoVM(color, roundNum);
-    this.itoArray.push(ito);
+    this.getItoArray().push(ito);
     return ito;
   };
 
@@ -297,17 +297,27 @@ YubinukiVM = (function(_super) {
     this.availableResolutions = [10, 20, 30];
     self = this;
     this.fmKomaValid = ko.observable(true);
-    this.fmKomaNum = ko.computed(NumericCompution(function(value) {
-      return self.config.koma = value;
-    }, function() {
-      return self.config.koma;
-    }, this.fmKomaValid, this));
+    this.fmKomaNum = ko.computed(NumericCompution({
+      read: function() {
+        return self.config.koma;
+      },
+      write: function(value) {
+        return self.config.koma = value;
+      },
+      validFlag: this.fmKomaValid,
+      owner: this
+    }));
     this.fmTobiValid = ko.observable(true);
-    this.fmTobiNum = ko.computed(NumericCompution(function(value) {
-      return self.config.tobi = value;
-    }, function() {
-      return self.config.tobi;
-    }, this.fmTobiValid, this));
+    this.fmTobiNum = ko.computed(NumericCompution({
+      read: function() {
+        return self.config.tobi;
+      },
+      write: function(value) {
+        return self.config.tobi = value;
+      },
+      validFlag: this.fmTobiValid,
+      owner: this
+    }));
     this.fmResolution = ko.computed({
       read: function() {
         return this.config.resolution;
@@ -327,6 +337,28 @@ YubinukiVM = (function(_super) {
     koma = new KomaVM(offset, forward, this.config);
     this.komaArray.push(koma);
     return koma;
+  };
+
+  YubinukiVM.prototype.updateConfig = function() {
+    var i, koma, komaArray, len, need, remove, _i, _j, _ref1, _results, _results1;
+    komaArray = this.getKomaArray();
+    if (komaArray.length < this.config.koma) {
+      need = this.config.koma - komaArray.length;
+      _results = [];
+      for (i = _i = 1; 1 <= need ? _i <= need : _i >= need; i = 1 <= need ? ++_i : --_i) {
+        _results.push(this.addKoma(offset));
+      }
+      return _results;
+    } else if (komaArray.length > this.config.koma) {
+      len = komaArray.length;
+      remove = komaArray.length - this.config.koma;
+      _results1 = [];
+      for (i = _j = 0, _ref1 = remove - 1; 0 <= _ref1 ? _j <= _ref1 : _j >= _ref1; i = 0 <= _ref1 ? ++_j : --_j) {
+        koma = komaArray[len - i];
+        _results1.push(komaArray.remove(koma));
+      }
+      return _results1;
+    }
   };
 
   return YubinukiVM;
@@ -405,6 +437,10 @@ Koma = (function(_super) {
     this.roundScale = 1;
   }
 
+  Koma.prototype.getItoArray = function() {
+    return this.itoArray;
+  };
+
   Koma.prototype.setRoundScale = function(s) {
     return this.roundScale = s;
   };
@@ -412,7 +448,7 @@ Koma = (function(_super) {
   Koma.prototype.addIto = function(color, roundNum) {
     var ito;
     ito = new Ito(color, roundNum);
-    this.itoArray.push(ito);
+    this.getItoArray().push(ito);
     return ito;
   };
 
@@ -452,18 +488,17 @@ Koma = (function(_super) {
   };
 
   Koma.prototype.currentIto = function() {
-    var ito, round, roundSum, totalRound, _i, _j, _len, _len1, _ref, _ref1;
+    var ito, itoArray, round, roundSum, totalRound, _i, _j, _len, _len1;
+    itoArray = this.getItoArray();
     totalRound = 0;
-    _ref = this.itoArray;
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      ito = _ref[_i];
+    for (_i = 0, _len = itoArray.length; _i < _len; _i++) {
+      ito = itoArray[_i];
       totalRound += ito.roundNum;
     }
     round = this.roundCount % totalRound;
     roundSum = 0;
-    _ref1 = this.itoArray;
-    for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-      ito = _ref1[_j];
+    for (_j = 0, _len1 = itoArray.length; _j < _len1; _j++) {
+      ito = itoArray[_j];
       roundSum += ito.roundNum;
       if (round < roundSum) {
         return ito;
@@ -473,19 +508,18 @@ Koma = (function(_super) {
   };
 
   Koma.prototype.validate = function() {
-    var ito, totalRound, _i, _j, _len, _len1, _ref, _ref1;
+    var ito, itoArray, totalRound, _i, _j, _len, _len1;
     Koma.__super__.validate.apply(this, arguments);
-    _ref = this.itoArray;
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      ito = _ref[_i];
+    itoArray = this.getItoArray();
+    for (_i = 0, _len = itoArray.length; _i < _len; _i++) {
+      ito = itoArray[_i];
       if (!ito.validate()) {
         return false;
       }
     }
     totalRound = 0;
-    _ref1 = this.itoArray;
-    for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-      ito = _ref1[_j];
+    for (_j = 0, _len1 = itoArray.length; _j < _len1; _j++) {
+      ito = itoArray[_j];
       totalRound += ito.roundNum;
     }
     if (totalRound > this.config.resolution) {
@@ -496,10 +530,10 @@ Koma = (function(_super) {
   };
 
   Koma.prototype.isValid = function() {
-    var ito, _i, _len, _ref;
-    _ref = this.itoArray;
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      ito = _ref[_i];
+    var ito, itoArray, _i, _len;
+    itoArray = this.getItoArray();
+    for (_i = 0, _len = itoArray.length; _i < _len; _i++) {
+      ito = itoArray[_i];
       if (!ito.isValid()) {
         return false;
       }
@@ -525,12 +559,16 @@ Yubinuki = (function(_super) {
     this.komaArray = [];
   }
 
+  Yubinuki.prototype.getKomaArray = function() {
+    return this.komaArray;
+  };
+
   Yubinuki.prototype.prepare = function() {
     if (!this.validate()) {
       return false;
     }
-    if (this.komaArray.length === 1) {
-      this.komaArray[0].setRoundScale(this.config.tobi);
+    if (this.getKomaArray().length === 1) {
+      this.getKomaArray()[0].setRoundScale(this.config.tobi);
     }
     return true;
   };
@@ -541,38 +579,37 @@ Yubinuki = (function(_super) {
       forward = true;
     }
     koma = new Koma(offset, forward, this.config);
-    this.komaArray.push(koma);
+    this.getKomaArray().push(koma);
     return koma;
   };
 
   Yubinuki.prototype.validate = function() {
-    var forward, koma, offset, offsets_backward, offsets_forward, tobiNum, _i, _j, _len, _len1, _ref, _ref1;
+    var forward, koma, komaArray, offset, offsets_backward, offsets_forward, tobiNum, _i, _j, _len, _len1;
     Yubinuki.__super__.validate.apply(this, arguments);
     tobiNum = this.config.tobi;
-    if (this.komaArray.length === 0) {
+    komaArray = this.getKomaArray();
+    if (komaArray.length === 0) {
       this.validateMessage.push("コマの設定がありません。");
       return false;
     }
-    if (tobiNum < this.komaArray.length) {
+    if (tobiNum < komaArray.length) {
       this.validateMessage.push("コマの設定が、トビ数を越えています。");
       return false;
     }
-    if (this.komaArray.length !== 1 && this.komaArray.length !== tobiNum) {
-      this.validateMessage.push("コマの設定は、1またはトビ数と同じにする必要があります。(コマ数 : " + this.komaArray.length + ", トビ数 : " + tobiNum + ")");
+    if (komaArray.length !== 1 && komaArray.length !== tobiNum) {
+      this.validateMessage.push("コマの設定は、1またはトビ数と同じにする必要があります。(コマ数 : " + komaArray.length + ", トビ数 : " + tobiNum + ")");
       return false;
     }
-    _ref = this.komaArray;
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      koma = _ref[_i];
+    for (_i = 0, _len = komaArray.length; _i < _len; _i++) {
+      koma = komaArray[_i];
       if (!koma.validate()) {
         return false;
       }
     }
     offsets_forward = [];
     offsets_backward = [];
-    _ref1 = this.komaArray;
-    for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-      koma = _ref1[_j];
+    for (_j = 0, _len1 = komaArray.length; _j < _len1; _j++) {
+      koma = komaArray[_j];
       forward = koma.forward;
       offset = koma.offset;
       if ((forward && offsets_forward.indexOf(offset) >= 0) || (!forward && offsets_backward.indexOf(offset) >= 0)) {
@@ -589,10 +626,10 @@ Yubinuki = (function(_super) {
   };
 
   Yubinuki.prototype.isValid = function() {
-    var koma, _i, _len, _ref;
-    _ref = this.komaArray;
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      koma = _ref[_i];
+    var koma, komaArray, _i, _len;
+    komaArray = this.getKomaArray();
+    for (_i = 0, _len = komaArray.length; _i < _len; _i++) {
+      koma = komaArray[_i];
       if (!koma.isValid()) {
         return false;
       }
@@ -601,20 +638,20 @@ Yubinuki = (function(_super) {
   };
 
   Yubinuki.prototype.getErrorMessages = function() {
-    var ito, koma, messages, _i, _j, _len, _len1, _ref, _ref1;
+    var ito, koma, komaArray, messages, _i, _j, _len, _len1, _ref;
     messages = [];
     if (this.validateMessage.length > 0) {
       messages = messages.concat(this.validateMessage);
     }
-    _ref = this.komaArray;
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      koma = _ref[_i];
+    komaArray = this.getKomaArray();
+    for (_i = 0, _len = komaArray.length; _i < _len; _i++) {
+      koma = komaArray[_i];
       if (koma.validateMessage.length > 0) {
         messages = messages.concat(koma.validateMessage);
       }
-      _ref1 = koma.itoArray;
-      for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-        ito = _ref1[_j];
+      _ref = koma.itoArray;
+      for (_j = 0, _len1 = _ref.length; _j < _len1; _j++) {
+        ito = _ref[_j];
         if (ito.validateMessage.length > 0) {
           messages = messages.concat(ito.validateMessage);
         }
