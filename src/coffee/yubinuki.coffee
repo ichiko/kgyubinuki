@@ -23,8 +23,12 @@ Direction =
 	Down: 0
 	Up: 1
 
+SasiType =
+	Nami: 0
+	Hiraki: 1
+
 class Koma extends ValidatableModel
-	constructor: (@offset, @forward, @config) ->
+	constructor: (@offset, @type, @config) ->
 		super
 		@direction = Direction.Down
 		@itoArray = []
@@ -46,7 +50,7 @@ class Koma extends ValidatableModel
 	# 戻り値：true(段が変わらない), false(次は段が変わる)
 	kagaru: ->
 		# 一段をかがるのに必要な針数：最小公倍数(コマ、トビ) / トビ * 2
-		if @forward
+		if @type == SasiType.Nami
 			@sasiCount += @config.tobi / 2.0
 		else
 			@sasiCount -= @config.tobi / 2.0
@@ -70,7 +74,7 @@ class Koma extends ValidatableModel
 		@offset + @sasiCount
 
 	sasiEndIndex: ->
-		if @forward
+		if @type == SasiType.Nami
 			return @offset + @sasiCount + @config.tobi / 2.0
 		else
 			return @offset + @sasiCount - @config.tobi / 2.0
@@ -135,8 +139,8 @@ class Yubinuki extends ValidatableModel
 
 		return true
 
-	addKoma: (offset, forward = true) ->
-		koma = new Koma(offset, forward, @config)
+	addKoma: (offset, type = SasiType.Nami) ->
+		koma = new Koma(offset, type, @config)
 		@getKomaArray().push koma
 		return koma
 
@@ -162,18 +166,18 @@ class Yubinuki extends ValidatableModel
 			if !koma.validate()
 				return false
 
-		offsets_forward = []
-		offsets_backward = []
+		offsets_nami = []
+		offsets_hiraki = []
 		for koma in komaArray
-			forward = koma.forward
+			type = koma.type
 			offset = koma.offset
-			if (forward and offsets_forward.indexOf(offset) >= 0) or (!forward and offsets_backward.indexOf(offset) >= 0)
+			if (type == SasiType.Nami and offsets_nami.indexOf(offset) >= 0) or (type == SasiType.Hiraki and offsets_hiraki.indexOf(offset) >= 0)
 				@validateMessage.push "同じ差し方向で、かがり始めの位置が重複しています。かがり始めの位置を変更するか、差し方向を変更してください。"
 				return false
-			if forward
-				offsets_forward.push offset
+			if type == SasiType.Nami
+				offsets_nami.push offset
 			else
-				offsets_backward.push offset
+				offsets_hiraki.push offset
 		return true
 
 	isValid: ->
@@ -196,4 +200,4 @@ class Yubinuki extends ValidatableModel
 					messages = messages.concat(ito.validateMessage)
 		return messages
 
-module.exports = {ValidatableModel, Ito, Koma, Yubinuki, Direction}
+module.exports = {ValidatableModel, Ito, Koma, Yubinuki, Direction, SasiType}

@@ -226,11 +226,11 @@ module.exports = Simulator;
 
 
 },{"./yubinuki":4}],3:[function(require,module,exports){
-var Direction, Ito, ItoVM, Koma, KomaVM, NumericCompution, ValidatableModel, Yubinuki, YubinukiVM, _ref,
+var Direction, Ito, ItoVM, Koma, KomaVM, NumericCompution, SasiType, ValidatableModel, Yubinuki, YubinukiVM, _ref,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-_ref = require('./yubinuki'), ValidatableModel = _ref.ValidatableModel, Ito = _ref.Ito, Koma = _ref.Koma, Yubinuki = _ref.Yubinuki, Direction = _ref.Direction;
+_ref = require('./yubinuki'), ValidatableModel = _ref.ValidatableModel, Ito = _ref.Ito, Koma = _ref.Koma, Yubinuki = _ref.Yubinuki, Direction = _ref.Direction, SasiType = _ref.SasiType;
 
 NumericCompution = function(arg) {
   return {
@@ -273,8 +273,8 @@ ItoVM = (function(_super) {
 KomaVM = (function(_super) {
   __extends(KomaVM, _super);
 
-  function KomaVM(offset, forward, config) {
-    KomaVM.__super__.constructor.call(this, offset, forward, config);
+  function KomaVM(offset, type, config) {
+    KomaVM.__super__.constructor.call(this, offset, type, config);
   }
 
   KomaVM.prototype.addIto = function(color, roundNum) {
@@ -327,15 +327,16 @@ YubinukiVM = (function(_super) {
       },
       owner: this
     });
+    this.komaArray = ko.observableArray();
   }
 
-  YubinukiVM.prototype.addKoma = function(offset, forward) {
+  YubinukiVM.prototype.addKoma = function(offset, type) {
     var koma;
-    if (forward == null) {
-      forward = true;
+    if (type == null) {
+      type = SasiType.Nami;
     }
-    koma = new KomaVM(offset, forward, this.config);
-    this.komaArray.push(koma);
+    koma = new KomaVM(offset, type, this.config);
+    this.getKomaArray().push(koma);
     return koma;
   };
 
@@ -374,7 +375,7 @@ exports.YubinukiVM = YubinukiVM;
 
 
 },{"./yubinuki":4}],4:[function(require,module,exports){
-var Direction, Ito, Koma, ValidatableModel, Yubinuki,
+var Direction, Ito, Koma, SasiType, ValidatableModel, Yubinuki,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -422,12 +423,17 @@ Direction = {
   Up: 1
 };
 
+SasiType = {
+  Nami: 0,
+  Hiraki: 1
+};
+
 Koma = (function(_super) {
   __extends(Koma, _super);
 
-  function Koma(offset, forward, config) {
+  function Koma(offset, type, config) {
     this.offset = offset;
-    this.forward = forward;
+    this.type = type;
     this.config = config;
     Koma.__super__.constructor.apply(this, arguments);
     this.direction = Direction.Down;
@@ -453,7 +459,7 @@ Koma = (function(_super) {
   };
 
   Koma.prototype.kagaru = function() {
-    if (this.forward) {
+    if (this.type === SasiType.Nami) {
       this.sasiCount += this.config.tobi / 2.0;
     } else {
       this.sasiCount -= this.config.tobi / 2.0;
@@ -480,7 +486,7 @@ Koma = (function(_super) {
   };
 
   Koma.prototype.sasiEndIndex = function() {
-    if (this.forward) {
+    if (this.type === SasiType.Nami) {
       return this.offset + this.sasiCount + this.config.tobi / 2.0;
     } else {
       return this.offset + this.sasiCount - this.config.tobi / 2.0;
@@ -573,18 +579,18 @@ Yubinuki = (function(_super) {
     return true;
   };
 
-  Yubinuki.prototype.addKoma = function(offset, forward) {
+  Yubinuki.prototype.addKoma = function(offset, type) {
     var koma;
-    if (forward == null) {
-      forward = true;
+    if (type == null) {
+      type = SasiType.Nami;
     }
-    koma = new Koma(offset, forward, this.config);
+    koma = new Koma(offset, type, this.config);
     this.getKomaArray().push(koma);
     return koma;
   };
 
   Yubinuki.prototype.validate = function() {
-    var forward, koma, komaArray, offset, offsets_backward, offsets_forward, tobiNum, _i, _j, _len, _len1;
+    var koma, komaArray, offset, offsets_hiraki, offsets_nami, tobiNum, type, _i, _j, _len, _len1;
     Yubinuki.__super__.validate.apply(this, arguments);
     tobiNum = this.config.tobi;
     komaArray = this.getKomaArray();
@@ -606,20 +612,20 @@ Yubinuki = (function(_super) {
         return false;
       }
     }
-    offsets_forward = [];
-    offsets_backward = [];
+    offsets_nami = [];
+    offsets_hiraki = [];
     for (_j = 0, _len1 = komaArray.length; _j < _len1; _j++) {
       koma = komaArray[_j];
-      forward = koma.forward;
+      type = koma.type;
       offset = koma.offset;
-      if ((forward && offsets_forward.indexOf(offset) >= 0) || (!forward && offsets_backward.indexOf(offset) >= 0)) {
+      if ((type === SasiType.Nami && offsets_nami.indexOf(offset) >= 0) || (type === SasiType.Hiraki && offsets_hiraki.indexOf(offset) >= 0)) {
         this.validateMessage.push("同じ差し方向で、かがり始めの位置が重複しています。かがり始めの位置を変更するか、差し方向を変更してください。");
         return false;
       }
-      if (forward) {
-        offsets_forward.push(offset);
+      if (type === SasiType.Nami) {
+        offsets_nami.push(offset);
       } else {
-        offsets_backward.push(offset);
+        offsets_hiraki.push(offset);
       }
     }
     return true;
@@ -669,7 +675,8 @@ module.exports = {
   Ito: Ito,
   Koma: Koma,
   Yubinuki: Yubinuki,
-  Direction: Direction
+  Direction: Direction,
+  SasiType: SasiType
 };
 
 

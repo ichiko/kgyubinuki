@@ -1,6 +1,6 @@
 # viewmodel.coffee
 
-{ValidatableModel, Ito, Koma, Yubinuki, Direction} = require './yubinuki'
+{ValidatableModel, Ito, Koma, Yubinuki, Direction, SasiType} = require './yubinuki'
 
 NumericCompution = (arg) ->
 	{
@@ -27,8 +27,8 @@ class ItoVM extends Ito
 		super color, roundNum
 
 class KomaVM extends Koma
-	constructor: (offset, forward, config) ->
-		super offset, forward, config
+	constructor: (offset, type, config) ->
+		super offset, type, config
 
 	addIto: (color, roundNum) ->
 		ito = new ItoVM(color, roundNum)
@@ -71,9 +71,11 @@ class YubinukiVM extends Yubinuki
 		owner: @
 		})
 
-	addKoma: (offset, forward = true) ->
-		koma = new KomaVM(offset, forward, @config)
-		@komaArray.push koma
+		@komaArray = ko.observableArray()
+
+	addKoma: (offset, type = SasiType.Nami) ->
+		koma = new KomaVM(offset, type, @config)
+		@getKomaArray().push koma
 		return koma
 
 	updateConfig: ->
