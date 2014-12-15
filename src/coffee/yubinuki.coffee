@@ -12,6 +12,9 @@ class Ito extends ValidatableModel
 	constructor: (@color, @roundNum) ->
 		super
 
+	prepare: ->
+		# nop
+
 	validate: ->
 		super
 		if @roundNum <= 0
@@ -46,6 +49,15 @@ class Koma extends ValidatableModel
 		ito = new Ito(color, roundNum)
 		@getItoArray().push ito
 		return ito
+
+	prepare: ->
+		@direction = Direction.Down
+		@sasiCount = 0
+		@roundCount = 0
+		@roundScale = 1
+
+		for ito in @getItoArray()
+			ito.prepare
 
 	# 戻り値：true(段が変わらない), false(次は段が変わる)
 	kagaru: ->
@@ -136,6 +148,9 @@ class Yubinuki extends ValidatableModel
 
 		if @getKomaArray().length == 1
 			@getKomaArray()[0].setRoundScale(@config.tobi)
+
+		for koma in @getKomaArray()
+			koma.prepare()
 
 		return true
 
