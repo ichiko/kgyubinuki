@@ -32,12 +32,15 @@ class Koma extends ValidatableModel
 		@roundCount = 0
 		@roundScale = 1
 
+	getItoArray: ->
+		@itoArray
+
 	setRoundScale: (s) ->
 		@roundScale = s
 
 	addIto: (color, roundNum) ->
 		ito = new Ito(color, roundNum)
-		@itoArray.push ito
+		@getItoArray().push ito
 		return ito
 
 	# 戻り値：true(段が変わらない), false(次は段が変わる)
@@ -73,12 +76,13 @@ class Koma extends ValidatableModel
 			return @offset + @sasiCount - @config.tobi / 2.0
 
 	currentIto: ->
+		itoArray = @getItoArray()
 		totalRound = 0
-		for ito in @itoArray
+		for ito in itoArray
 			totalRound += ito.roundNum
 		round =  @roundCount % totalRound
 		roundSum = 0
-		for ito in @itoArray
+		for ito in itoArray
 			roundSum += ito.roundNum
 			if round < roundSum
 				return ito
@@ -87,12 +91,14 @@ class Koma extends ValidatableModel
 	validate: ->
 		super
 
-		for ito in @itoArray
+		itoArray = @getItoArray()
+
+		for ito in itoArray
 			if !ito.validate()
 				return false
 
 		totalRound = 0
-		for ito in @itoArray
+		for ito in itoArray
 			totalRound += ito.roundNum
 		if totalRound > @config.resolution
 			@validateMessage.push "コマ内の糸の段数指定が、針数をオーバーしています。段数の合計が、針数以内に収まるように指定してください。"
@@ -101,7 +107,8 @@ class Koma extends ValidatableModel
 		return true
 
 	isValid: ->
-		for ito in @itoArray
+		itoArray = @getItoArray()
+		for ito in itoArray
 			if !ito.isValid()
 				return false
 		super
@@ -116,44 +123,48 @@ class Yubinuki extends ValidatableModel
 			resolution: resolution
 		@komaArray = []
 
+	getKomaArray: ->
+		@komaArray
+
 	prepare: ->
 		if !@validate()
 			return false
 
-		if @komaArray.length == 1
-			@komaArray[0].setRoundScale(@config.tobi)
+		if @getKomaArray().length == 1
+			@getKomaArray()[0].setRoundScale(@config.tobi)
 
 		return true
 
 	addKoma: (offset, forward = true) ->
 		koma = new Koma(offset, forward, @config)
-		@komaArray.push koma
+		@getKomaArray().push koma
 		return koma
 
 	validate: ->
 		super
 
 		tobiNum = @config.tobi
+		komaArray = @getKomaArray()
 
-		if @komaArray.length == 0
+		if komaArray.length == 0
 			@validateMessage.push "コマの設定がありません。"
 			return false
 
-		if tobiNum < @komaArray.length
+		if tobiNum < komaArray.length
 			@validateMessage.push "コマの設定が、トビ数を越えています。"
 			return false
 
-		if @komaArray.length != 1 and @komaArray.length != tobiNum
-			@validateMessage.push "コマの設定は、1またはトビ数と同じにする必要があります。(コマ数 : " + @komaArray.length + ", トビ数 : " + tobiNum + ")"
+		if komaArray.length != 1 and komaArray.length != tobiNum
+			@validateMessage.push "コマの設定は、1またはトビ数と同じにする必要があります。(コマ数 : " + komaArray.length + ", トビ数 : " + tobiNum + ")"
 			return false
 
-		for koma in @komaArray
+		for koma in komaArray
 			if !koma.validate()
 				return false
 
 		offsets_forward = []
 		offsets_backward = []
-		for koma in @komaArray
+		for koma in komaArray
 			forward = koma.forward
 			offset = koma.offset
 			if (forward and offsets_forward.indexOf(offset) >= 0) or (!forward and offsets_backward.indexOf(offset) >= 0)
@@ -166,7 +177,8 @@ class Yubinuki extends ValidatableModel
 		return true
 
 	isValid: ->
-		for koma in @komaArray
+		komaArray = @getKomaArray()
+		for koma in komaArray
 			if !koma.isValid()
 				return false
 		super
@@ -175,7 +187,8 @@ class Yubinuki extends ValidatableModel
 		messages = []
 		if @validateMessage.length > 0
 			messages = messages.concat(@validateMessage)
-		for koma in @komaArray
+		komaArray = @getKomaArray()
+		for koma in komaArray
 			if koma.validateMessage.length > 0
 				messages = messages.concat(koma.validateMessage)
 			for ito in koma.itoArray
