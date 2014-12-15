@@ -191,14 +191,11 @@ class YubinukiVM extends Yubinuki
 			return
 		komaLen = @komaArray().length
 		tobi = @config.tobi
-		console.log "updateConfig", komaLen, @config.tobi
 		if komaLen < tobi
-			console.log "updateConfig", "too short"
 			need = tobi - komaLen
 			for i in [1..need]
 				@addKoma(0)
 		else if komaLen > tobi
-			console.log "updateConfig", "too long"
 			remove = komaLen - tobi
 			for i in [0..remove - 1]
 				koma = @komaArray[komaLen - i]
