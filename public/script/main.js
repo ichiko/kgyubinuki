@@ -1,18 +1,24 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var ItoVM, KomaVM, Simulator, YubinukiSimulatorVM, YubinukiVM, _ref;
+var ItoVM, KomaVM, SasiType, Simulator, YubinukiSimulatorVM, YubinukiVM, _ref;
 
 Simulator = require('./simulator');
 
-_ref = require('./viewmodel'), ItoVM = _ref.ItoVM, KomaVM = _ref.KomaVM, YubinukiVM = _ref.YubinukiVM;
+_ref = require('./viewmodel'), ItoVM = _ref.ItoVM, KomaVM = _ref.KomaVM, YubinukiVM = _ref.YubinukiVM, SasiType = _ref.SasiType;
 
 YubinukiSimulatorVM = (function() {
   function YubinukiSimulatorVM() {
-    var canvas, cc;
+    var canvas, cc, koma, yb;
     canvas = document.getElementById('canvas');
     cc = canvas.getContext('2d');
     cc.save();
     this.simulator = new Simulator(canvas, cc);
     this.yubinuki = ko.observable(new YubinukiVM(8, 2, 30, false));
+    yb = this.yubinuki();
+    koma = yb.addKoma(0);
+    koma.addIto('blue', 5);
+    koma.addIto('skyblue', 5);
+    koma = yb.addKoma(1, SasiType.Hiraki);
+    koma.addIto('red', 1);
   }
 
   YubinukiSimulatorVM.prototype.simulate = function() {
@@ -226,7 +232,7 @@ module.exports = Simulator;
 
 
 },{"./yubinuki":4}],3:[function(require,module,exports){
-var Direction, Ito, ItoVM, Koma, KomaVM, NumericCompution, SasiType, ValidatableModel, Yubinuki, YubinukiVM, _ref,
+var Direction, Ito, ItoVM, Koma, KomaVM, NumericCompution, SasiType, SasiTypeViewModel, ValidatableModel, Yubinuki, YubinukiVM, _ref,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -238,7 +244,7 @@ NumericCompution = function(arg) {
       var value;
       value = arg.read();
       if (isNaN(value)) {
-        value = parseInt(value.replace(/[^\d]/g, ""));
+        value = parseInt(value.replace(/[^\d\-]/g, ""));
         if (isNaN(value)) {
           value = 0;
         }
@@ -247,9 +253,16 @@ NumericCompution = function(arg) {
       return value;
     },
     write: function(value) {
-      value = parseInt(value.replace(/[^\d]/g, ""));
+      value = parseInt(value.replace(/[^\d\-]/g, ""));
       if (isNaN(value)) {
         return arg.validFlag(false);
+      } else if (arg.check) {
+        if (arg.check(value)) {
+          arg.validFlag(true);
+          return arg.write(value);
+        } else {
+          return arg.validFlag(false);
+        }
       } else {
         arg.validFlag(true);
         return arg.write(value);
@@ -259,11 +272,52 @@ NumericCompution = function(arg) {
   };
 };
 
+SasiTypeViewModel = [
+  {
+    typeName: "並み刺し",
+    typeId: 0
+  }, {
+    typeName: "開き刺し",
+    typeId: 1
+  }
+];
+
 ItoVM = (function(_super) {
   __extends(ItoVM, _super);
 
   function ItoVM(color, roundNum) {
+    var self;
     ItoVM.__super__.constructor.call(this, color, roundNum);
+    self = this;
+    this.fmColorValid = ko.observable(true);
+    this.fmColor = ko.computed({
+      read: function() {
+        return self.color;
+      },
+      write: function(value) {
+        if (value.length === 0) {
+          return this.fmColorValid(false);
+        } else {
+          this.fmColorValid(true);
+          return self.color = value;
+        }
+      },
+      owner: this
+    });
+    this.fmRoundValid = ko.observable(true);
+    this.fmRound = ko.computed(NumericCompution({
+      read: function() {
+        return self.roundNum;
+      },
+      write: function(value) {
+        return self.roundNum = value;
+      },
+      check: function(value) {
+        return value > 0;
+      },
+      validFlag: this.fmRoundValid,
+      owner: this
+    }));
   }
 
   return ItoVM;
@@ -274,7 +328,57 @@ KomaVM = (function(_super) {
   __extends(KomaVM, _super);
 
   function KomaVM(offset, type, config) {
+    var self;
     KomaVM.__super__.constructor.call(this, offset, type, config);
+    self = this;
+    this.fmOffsetValid = ko.observable(true);
+    this.fmOffset = ko.computed(NumericCompution({
+      read: function() {
+        return self.offset;
+      },
+      write: function(value) {
+        return self.offset = value;
+      },
+      check: function(value) {
+        return value >= 0 && value < self.config.tobi;
+      },
+      validFlag: this.fmOffsetValid,
+      owner: this
+    }));
+    this.fmType = ko.computed({
+      read: function() {
+        return SasiTypeViewModel[self.type];
+      },
+      write: function(obj) {
+        return self.type = obj.typeId;
+      },
+      owner: this
+    });
+    this.itoArray = ko.observableArray();
+    this.addNewIto = function() {
+      return self.addIto('gray', 1);
+    };
+    this.removeIto = function(ito) {
+      return self.getItoArray().remove(ito);
+    };
+    this.moveUp = function(ito) {
+      var index, itoArray;
+      itoArray = self.getItoArray();
+      index = itoArray.indexOf(ito);
+      if (index > 0) {
+        itoArray.remove(ito);
+        return itoArray.splice(index - 1, 0, ito);
+      }
+    };
+    this.moveDown = function(ito) {
+      var index, itoArray;
+      itoArray = self.getItoArray();
+      index = itoArray.indexOf(ito);
+      if (index > -1 && index < itoArray().length - 1) {
+        itoArray.remove(ito);
+        return itoArray.splice(index + 1, 0, ito);
+      }
+    };
   }
 
   KomaVM.prototype.addIto = function(color, roundNum) {
@@ -295,6 +399,7 @@ YubinukiVM = (function(_super) {
     var self;
     YubinukiVM.__super__.constructor.call(this, komaNum, tobiNum, resolution, kasane);
     this.availableResolutions = [10, 20, 30];
+    this.availableSasiTypes = SasiTypeViewModel;
     self = this;
     this.fmKomaValid = ko.observable(true);
     this.fmKomaNum = ko.computed(NumericCompution({
@@ -371,6 +476,8 @@ exports.ItoVM = ItoVM;
 exports.KomaVM = KomaVM;
 
 exports.YubinukiVM = YubinukiVM;
+
+exports.SasiType = SasiType;
 
 
 

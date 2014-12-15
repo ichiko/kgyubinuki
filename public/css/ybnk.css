@@ -19,3 +19,8 @@ body > .container {
   margin-left: 20px;
   text-align: right;
 }
+
+.number{
+  /*width: 5em;*/
+  text-align: right;
+}
