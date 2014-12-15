@@ -170,7 +170,9 @@
 							<p class="invalid" data-bind="visible: !ito.fmRoundValid()">1以上の数値を入力してください。</p>
 						</td>
 						<td>
+						<!-- ko if: koma.itoArray().length - 1 -->
 						<button data-bind="click: koma.removeIto">削除</button>
+						<!-- /ko -->
 						</td>
 					</tr>
 					<!-- /ko -->
