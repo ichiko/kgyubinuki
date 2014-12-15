@@ -1,6 +1,6 @@
 # simulator.coffee
 
-{ValidatableModel, Ito, Koma, Yubinuki, Direction} = require './yubinuki'
+{ValidatableModel, Ito, Koma, Yubinuki, Direction, SasiType} = require './yubinuki'
 
 PADDING_LEFT = 60
 SIMULATOR_WIDTH = 400
@@ -70,14 +70,16 @@ class Simulator
 		sasiWidth = komaWidth / resolution
 
 		loopNum = komaNum * resolution
-		anchor = yubinuki.komaArray[yubinuki.komaArray.length - 1]
+		komaArray = yubinuki.getKomaArray()
+		anchor = komaArray[komaArray.length - 1]
+		console.log anchor, anchor.isFilled()
 		chk = 0
 		while !anchor.isFilled() and chk < CHECKER_MAX
 			chk += 1
 
-			for koma in yubinuki.komaArray
+			for koma in komaArray
 				offset = koma.offset
-				forward = koma.forward
+				type = koma.type
 				color = koma.currentIto().color
 
 				nextRound = true
@@ -86,13 +88,13 @@ class Simulator
 					sasiStart = koma.sasiStartIndex()
 					sasiEnd = koma.sasiEndIndex()
 					sasiOffset = koma.roundCount * sasiWidth
-					if !forward
+					if type == SasiType.Hiraki
 						sasiOffset *= -1
 
 					start_x = PADDING_LEFT + sasiOffset + komaWidth * sasiStart
 					end_x = PADDING_LEFT + sasiOffset + komaWidth * sasiEnd
 
-					if !forward
+					if type == SasiType.Hiraki
 						start_x += SIMULATOR_WIDTH
 						end_x += SIMULATOR_WIDTH
 
@@ -111,7 +113,7 @@ class Simulator
 						more_one = true
 						start_x -= SIMULATOR_WIDTH
 						end_x -= SIMULATOR_WIDTH
-					if !forward and end_x <= PADDING_LEFT
+					if type == SasiType.Hiraki and end_x <= PADDING_LEFT
 						more_one = true
 						start_x += SIMULATOR_WIDTH
 						end_x += SIMULATOR_WIDTH
