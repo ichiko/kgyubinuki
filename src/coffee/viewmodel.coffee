@@ -201,9 +201,7 @@ class YubinukiVM extends Yubinuki
 				@addKoma(0)
 		else if komaLen > tobi
 			remove = komaLen - tobi
-			for i in [0..remove - 1]
-				koma = @komaArray[komaLen - i]
-				@komaArray.remove(koma)
+			@komaArray.splice(komaLen - remove, remove)
 
 exports.ItoVM = ItoVM
 exports.KomaVM = KomaVM
