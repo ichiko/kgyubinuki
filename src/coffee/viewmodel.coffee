@@ -133,6 +133,8 @@ class YubinukiVM extends Yubinuki
 	constructor: (komaNum, tobiNum, resolution, kasane) ->
 		super komaNum, tobiNum, resolution, kasane
 
+		@prepared = false
+
 		@availableResolutions = [10, 20, 30]
 		@availableSasiTypes = SasiTypeViewModel
 
@@ -173,6 +175,13 @@ class YubinukiVM extends Yubinuki
 		owner: @
 		})
 
+		@fmUseOneKoma = ko.observable(false)
+		@clickUseOneKoma = ->
+			@updateConfig()
+			return true
+
+		@prepared = true
+
 	startManualSet: ->
 		@manualMode = true
 
@@ -191,10 +200,15 @@ class YubinukiVM extends Yubinuki
 		return koma
 
 	updateConfig: ->
+		if !@prepared
+			return
 		if @manualMode
 			return
 		komaLen = @komaArray().length
 		tobi = @config.tobi
+		useOneKoma = @fmUseOneKoma()
+		if useOneKoma
+			tobi = 1
 		if komaLen < tobi
 			need = tobi - komaLen
 			for i in [1..need]

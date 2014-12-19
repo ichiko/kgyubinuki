@@ -132,14 +132,23 @@
 			</div>
 
 			<div class="simulator-option">
-				<input type="checkbox" data-bind="checked: stepSimulation">途中までシミュレート</input>
-				<span data-bind="text: stepNum"></span>段
-				<div id="slider" class="slider" data-bind="slider: { value: stepNum, realtime: true, max: stepMax }"></div>
+				<p data-bind="with: yubinuki">
+					<input type="checkbox" data-bind="checked: fmUseOneKoma, click: clickUseOneKoma">刺し位置をずらさずに、ひとつだけ使用する(矢鱈縞)</input>
+				</p>
+				<p>
+					<input type="checkbox" data-bind="checked: stepSimulation">途中までシミュレート</input>
+					<span data-bind="text: stepNum"></span>段
+					<div id="slider" class="slider" data-bind="slider: { value: stepNum, realtime: true, max: stepMax }"></div>
+				</p>
 			</div>
 <!--
 			<button data-bind="click: addPattern">手順の追加</button>
 -->
 			<button data-bind="click: simulate">シミュレート</button>
+
+			<!-- ko with:yubinuki -->
+			<p data-bind="visible: fmUseOneKoma">UseOne Koma only</p>
+			<!-- /ko -->
 
 			<div data-bind="with: yubinuki">
 			<table class="table">

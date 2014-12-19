@@ -425,6 +425,7 @@ YubinukiVM = (function(_super) {
   function YubinukiVM(komaNum, tobiNum, resolution, kasane) {
     var self;
     YubinukiVM.__super__.constructor.call(this, komaNum, tobiNum, resolution, kasane);
+    this.prepared = false;
     this.availableResolutions = [10, 20, 30];
     this.availableSasiTypes = SasiTypeViewModel;
     this.komaArray = ko.observableArray();
@@ -465,6 +466,12 @@ YubinukiVM = (function(_super) {
       },
       owner: this
     });
+    this.fmUseOneKoma = ko.observable(false);
+    this.clickUseOneKoma = function() {
+      this.updateConfig();
+      return true;
+    };
+    this.prepared = true;
   }
 
   YubinukiVM.prototype.startManualSet = function() {
@@ -497,12 +504,19 @@ YubinukiVM = (function(_super) {
   };
 
   YubinukiVM.prototype.updateConfig = function() {
-    var i, koma, komaLen, need, remove, tobi, _i, _j, _ref1, _results, _results1;
+    var i, komaLen, need, remove, tobi, useOneKoma, _i, _results;
+    if (!this.prepared) {
+      return;
+    }
     if (this.manualMode) {
       return;
     }
     komaLen = this.komaArray().length;
     tobi = this.config.tobi;
+    useOneKoma = this.fmUseOneKoma();
+    if (useOneKoma) {
+      tobi = 1;
+    }
     if (komaLen < tobi) {
       need = tobi - komaLen;
       _results = [];
@@ -512,12 +526,7 @@ YubinukiVM = (function(_super) {
       return _results;
     } else if (komaLen > tobi) {
       remove = komaLen - tobi;
-      _results1 = [];
-      for (i = _j = 0, _ref1 = remove - 1; 0 <= _ref1 ? _j <= _ref1 : _j >= _ref1; i = 0 <= _ref1 ? ++_j : --_j) {
-        koma = this.komaArray[komaLen - i];
-        _results1.push(this.komaArray.remove(koma));
-      }
-      return _results1;
+      return this.komaArray.splice(komaLen - remove, remove);
     }
   };
 
