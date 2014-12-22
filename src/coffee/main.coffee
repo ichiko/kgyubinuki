@@ -19,7 +19,6 @@ class YubinukiSimulatorVM
 		@stepNum = ko.observable(10)
 		@stepMax = ko.computed( ->
 			yubinuki = self.yubinuki()
-			# TODO Koma設定がひとつしかない場合の考慮
 			max = yubinuki.fmTobi() * yubinuki.fmResolution()
 			console.log "stepMax", max
 			return max

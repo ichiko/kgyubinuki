@@ -54,7 +54,6 @@ class Koma extends ValidatableModel
 		@direction = Direction.Down
 		@sasiCount = 0
 		@roundCount = 0
-		@roundScale = 1
 
 		for ito in @getItoArray()
 			ito.prepare()

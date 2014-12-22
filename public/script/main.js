@@ -159,7 +159,6 @@ Simulator = (function() {
     loopNum = komaNum * resolution;
     komaArray = yubinuki.getKomaArray();
     anchor = komaArray[komaArray.length - 1];
-    console.log(anchor, anchor.isFilled());
     chk = 0;
     _results = [];
     while (!anchor.isFilled() && chk < CHECKER_MAX) {
@@ -637,7 +636,6 @@ Koma = (function(_super) {
     this.direction = Direction.Down;
     this.sasiCount = 0;
     this.roundCount = 0;
-    this.roundScale = 1;
     _ref = this.getItoArray();
     _results = [];
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {

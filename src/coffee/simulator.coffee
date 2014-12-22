@@ -73,7 +73,6 @@ class Simulator
 		loopNum = komaNum * resolution
 		komaArray = yubinuki.getKomaArray()
 		anchor = komaArray[komaArray.length - 1]
-		console.log anchor, anchor.isFilled()
 		chk = 0
 		while !anchor.isFilled() and chk < CHECKER_MAX
 			chk += 1
