@@ -24,8 +24,10 @@
     "bootstrap": {
       "/": [
         "dist/css/bootstrap.min.css",
-        "dist/fonts/*",
         "dist/js/bootstrap.min.js"
+      ],
+      "../fonts/": [
+        "dist/fonts/*"
       ]
     },
     "jquery-ui": {

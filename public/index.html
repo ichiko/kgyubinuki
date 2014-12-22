@@ -116,37 +116,52 @@
 				</li>
 				</ol>
 			</li>
+			<li>「シミュレート」ボタンを押すと、シミュレーション結果が表示されます。</li>
 			</ol>
 
 			<p>値が反映されないな、と思ったら<strong>全角入力でないか確認してください。</strong></p>
 
-			<h4>
-			コピペ用基本色一覧。<a href="#colorpallet_link" id="colorpallet_link">開く</a>
-			</h4>
-			<div id="colorpallet" style="width: 500px">
-				<table class="table">
-					<thead><tr>
-						<th>色名</th><th>指定する値（こっちをコピペ）</th>
-					</tr></thead>
-					<tbody>
-						<tr><td>赤</td><td>red</td></tr>
-						<tr><td>オレンジ</td><td>orange</td></tr>
-						<tr><td>黄色</td><td>yellow</td></tr>
-						<tr><td>黄緑</td><td>greenyellow</td></tr>
-						<tr><td>緑</td><td>green</td></tr>
-						<tr><td>青緑</td><td>lightseagreen</td></tr>
-						<tr><td>青</td><td>blue</td></tr>
-						<tr><td>紫</td><td>purple</td></tr>
-						<tr><td>白</td><td>white</td></tr>
-						<tr><td>灰色</td><td>gray</td></tr>
-						<tr><td>黒</td><td>black</td></tr>
-					</tbody>
-				</table>
-			</div>
-
 			<h3>Q&A</h3>
 			<div class="panel panel-default">
-				<div class="panel-heading">Q. 矢鱈縞(やたらごうし)の模様を作るにはどうすればいいですか?</div>
+				<div class="panel-heading">Q1. 色の指定に使用できるWebカラー名を教えてください。</div>
+				<div class="panel-body">
+				<p>A.</p>
+				<p>
+					Webカラーとは、ブラウザで定義されている色名です。英語表記の色名とほぼ同じで、青は blue、赤は red で表現します。
+				</p>
+				<div class="panel panel-default">
+					<div class="panel-body">
+						<p>基本的な色のリストを<a href="#colorpallet_link" id="colorpallet_link">開く</a></p>
+						<table class="table table-condensed" id="colorpallet">
+							<thead><tr>
+								<th>色名</th><th>指定する値（こっちをコピペ）</th>
+							</tr></thead>
+							<tbody>
+								<tr><td>赤</td><td>red</td></tr>
+								<tr><td>オレンジ</td><td>orange</td></tr>
+								<tr><td>黄色</td><td>yellow</td></tr>
+								<tr><td>黄緑</td><td>greenyellow</td></tr>
+								<tr><td>緑</td><td>green</td></tr>
+								<tr><td>青緑</td><td>lightseagreen</td></tr>
+								<tr><td>青</td><td>blue</td></tr>
+								<tr><td>紫</td><td>purple</td></tr>
+								<tr><td>白</td><td>white</td></tr>
+								<tr><td>灰色</td><td>gray</td></tr>
+								<tr><td>黒</td><td>black</td></tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+				<p>
+					下記のリンクから、一覧を見ることができます。
+				</p>
+				<p>
+					<span class="glyphicon glyphicon-link"></span><a href="http://www.colordic.org" target="_blank">WEB色見本 原色大辞典 - HTML Color Names</a>(外部サイト)
+				</p>
+				</div>
+			</div>
+			<div class="panel panel-default">
+				<div class="panel-heading">Q1. 矢鱈縞(やたらごうし)の模様を作るにはどうすればいいですか?</div>
 				<div class="panel-body">
 				<p>A.</p>
 				<p>
@@ -157,8 +172,17 @@
 				</p>
 				</div>
 			</div>
+			<div class="panel panel-default">
+				<div class="panel-heading">Q2. かがり途中の状態を見ることはできますか?</div>
+				<div class="panel-body">
+				<p>A.</p>
+				<p>
+					チェックボックス「途中までシミュレート」にチェックを入れ、その下にあるスライダーを動かして、段数を指定することで、その段までのシミュレート結果を表示することができます。
+				</p>
+				</div>
+			</div>
 
-			<h3 class="page-header">シミュレータ</h3>
+			<h3 class="page-header" id="simulator">シミュレータ</h3>
 
 			<p>
 			<canvas id="canvas" style="border: solid 1px black" width="600" height="120"></canvas>
