@@ -37,7 +37,7 @@ YubinukiSimulatorVM = (function() {
   YubinukiSimulatorVM.prototype.simulate = function() {
     var canvas, cc, yubinuki;
     yubinuki = this.getYubinuki();
-    this.simulator.draw(yubinuki);
+    this.simulator.simulate(yubinuki, this.stepSimulation(), this.stepNum());
     canvas = document.getElementById('canvas');
     cc = canvas.getContext('2d');
     return cc.restore();
@@ -104,10 +104,17 @@ Simulator = (function() {
     this.context = context;
   }
 
-  Simulator.prototype.draw = function(yubinuki) {
+  Simulator.prototype.simulate = function(yubinuki, stepExecute, stepNum) {
     var kasane, komaNum;
+    if (stepExecute == null) {
+      stepExecute = false;
+    }
+    if (stepNum == null) {
+      stepNum = 0;
+    }
     komaNum = yubinuki.config.koma;
     kasane = yubinuki.kasane;
+    console.log("Simulate: stepExecute=", stepExecute, "stepNum=", stepNum);
     if (!yubinuki.prepare()) {
       alert(yubinuki.getErrorMessages());
       return;
@@ -117,7 +124,7 @@ Simulator = (function() {
     if (kasane) {
 
     } else {
-      this.drawSimple(yubinuki);
+      this.drawSimple(yubinuki, stepExecute, stepNum);
     }
     if (SIDE_CUTOFF) {
       return this.cutoff();
@@ -149,8 +156,8 @@ Simulator = (function() {
     return this.context.clearRect(PADDING_LEFT + SIMULATOR_WIDTH + 1, KAGARI_TOP - 1, this.canvas.width - (PADDING_LEFT + SIMULATOR_WIDTH + 1), KAGARI_BOTTOM - KAGARI_TOP + 2);
   };
 
-  Simulator.prototype.drawSimple = function(yubinuki) {
-    var anchor, chk, color, direction, end_x, koma, komaArray, komaNum, komaWidth, loopNum, more_one, nextRound, offset, resolution, sasiEnd, sasiOffset, sasiStart, sasiWidth, start_x, tobiNum, type, _results;
+  Simulator.prototype.drawSimple = function(yubinuki, stepExecute, stepNum) {
+    var anchor, chk, color, direction, end_x, koma, komaArray, komaNum, komaWidth, loopNum, more_one, offset, resolution, sameRound, sasiEnd, sasiOffset, sasiStart, sasiWidth, start_x, stepCount, tobiNum, type, _results;
     komaNum = yubinuki.config.koma;
     tobiNum = yubinuki.config.tobi;
     resolution = yubinuki.config.resolution;
@@ -160,8 +167,9 @@ Simulator = (function() {
     komaArray = yubinuki.getKomaArray();
     anchor = komaArray[komaArray.length - 1];
     chk = 0;
+    stepCount = 0;
     _results = [];
-    while (!anchor.isFilled() && chk < CHECKER_MAX) {
+    while (!anchor.isFilled() && (!stepExecute || (stepExecute && stepCount < stepNum)) && chk < CHECKER_MAX) {
       chk += 1;
       _results.push((function() {
         var _i, _len, _results1;
@@ -171,11 +179,15 @@ Simulator = (function() {
           offset = koma.offset;
           type = koma.type;
           color = koma.currentIto().color;
-          nextRound = true;
+          if (stepExecute && stepCount >= stepNum) {
+            break;
+          }
+          stepCount += 1;
+          sameRound = true;
           _results1.push((function() {
             var _results2;
             _results2 = [];
-            while (nextRound) {
+            while (sameRound) {
               direction = koma.direction;
               sasiStart = koma.sasiStartIndex();
               sasiEnd = koma.sasiEndIndex();
@@ -222,7 +234,7 @@ Simulator = (function() {
                 }
                 this.context.stroke();
               }
-              _results2.push(nextRound = koma.kagaru());
+              _results2.push(sameRound = koma.kagaru());
             }
             return _results2;
           }).call(this));

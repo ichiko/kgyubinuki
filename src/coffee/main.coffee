@@ -19,6 +19,7 @@ class YubinukiSimulatorVM
 		@stepNum = ko.observable(10)
 		@stepMax = ko.computed( ->
 			yubinuki = self.yubinuki()
+			# TODO 重ね刺しの場合
 			max = yubinuki.fmTobi() * yubinuki.fmResolution()
 			console.log "stepMax", max
 			return max
@@ -37,7 +38,7 @@ class YubinukiSimulatorVM
 
 	simulate: ->
 		yubinuki = @getYubinuki()
-		@simulator.draw(yubinuki)
+		@simulator.simulate(yubinuki, @stepSimulation(), @stepNum())
 
 		canvas = document.getElementById('canvas');
 		cc = canvas.getContext('2d');

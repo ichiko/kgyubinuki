@@ -22,9 +22,11 @@ SIDE_CUTOFF = false
 class Simulator
 	constructor: (@canvas, @context) ->
 
-	draw: (yubinuki) ->
+	simulate: (yubinuki, stepExecute = false, stepNum = 0) ->
 		komaNum = yubinuki.config.koma
 		kasane = yubinuki.kasane
+
+		console.log "Simulate: stepExecute=", stepExecute, "stepNum=", stepNum
 
 		if !yubinuki.prepare()
 			alert(yubinuki.getErrorMessages())
@@ -37,7 +39,7 @@ class Simulator
 		if kasane
 			# TODO
 		else
-			@drawSimple(yubinuki)
+			@drawSimple(yubinuki, stepExecute, stepNum)
 
 		if SIDE_CUTOFF
 			@cutoff()
@@ -62,7 +64,7 @@ class Simulator
 		@context.clearRect(0, KAGARI_TOP - 1, PADDING_LEFT - 1, KAGARI_BOTTOM - KAGARI_TOP + 2)
 		@context.clearRect(PADDING_LEFT + SIMULATOR_WIDTH + 1, KAGARI_TOP - 1, @canvas.width - (PADDING_LEFT + SIMULATOR_WIDTH + 1), KAGARI_BOTTOM - KAGARI_TOP + 2)
 
-	drawSimple: (yubinuki) ->
+	drawSimple: (yubinuki, stepExecute, stepNum) ->
 		komaNum = yubinuki.config.koma
 		tobiNum = yubinuki.config.tobi
 		resolution = yubinuki.config.resolution
@@ -74,7 +76,8 @@ class Simulator
 		komaArray = yubinuki.getKomaArray()
 		anchor = komaArray[komaArray.length - 1]
 		chk = 0
-		while !anchor.isFilled() and chk < CHECKER_MAX
+		stepCount = 0
+		while !anchor.isFilled() and ( !stepExecute or (stepExecute and stepCount < stepNum) ) and chk < CHECKER_MAX
 			chk += 1
 
 			for koma in komaArray
@@ -82,8 +85,12 @@ class Simulator
 				type = koma.type
 				color = koma.currentIto().color
 
-				nextRound = true
-				while nextRound
+				if stepExecute and stepCount >= stepNum
+					break
+
+				stepCount += 1
+				sameRound = true
+				while sameRound
 					direction = koma.direction
 					sasiStart = koma.sasiStartIndex()
 					sasiEnd = koma.sasiEndIndex()
@@ -129,6 +136,6 @@ class Simulator
 							@context.lineTo(end_x, KAGARI_TOP)
 						@context.stroke()
 
-					nextRound = koma.kagaru()
+					sameRound = koma.kagaru()
 
 module.exports = Simulator

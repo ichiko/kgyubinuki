@@ -138,7 +138,7 @@
 				<p>
 					<input type="checkbox" data-bind="checked: stepSimulation">途中までシミュレート</input>
 					<span data-bind="text: stepNum"></span>段
-					<div id="slider" class="slider" data-bind="slider: { value: stepNum, realtime: true, max: stepMax }"></div>
+					<div id="slider" class="slider" data-bind="slider: { value: stepNum, realtime: true, min: 1, max: stepMax }"></div>
 				</p>
 			</div>
 <!--
