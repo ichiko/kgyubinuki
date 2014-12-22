@@ -31,7 +31,7 @@ SasiType =
 	Hiraki: 1
 
 class Koma extends ValidatableModel
-	constructor: (@offset, @type, @config) ->
+	constructor: (@offset, @type, @komaKagari, @config) ->
 		super
 		@direction = Direction.Down
 		@itoArray = []
@@ -130,7 +130,7 @@ class Koma extends ValidatableModel
 
 class Yubinuki extends ValidatableModel
 	# TODO @kasane 重ね差しの実装
-	constructor: (komaNum, tobiNum, resolution, @kasane) ->
+	constructor: (komaNum, tobiNum, resolution) ->
 		super
 		@config = 
 			koma: komaNum
@@ -153,10 +153,13 @@ class Yubinuki extends ValidatableModel
 
 		return true
 
-	addKoma: (offset, type = SasiType.Nami) ->
-		koma = new Koma(offset, type, @config)
+	addKoma: (offset, type = SasiType.Nami, komaKagari = false) ->
+		koma = new Koma(offset, type, komaKagari, @config)
 		@getKomaArray().push koma
 		return koma
+
+	enableKasaneSasi: ->
+		@getKomaArray().length > 1
 
 	validate: ->
 		super

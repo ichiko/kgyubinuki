@@ -153,7 +153,7 @@
 			<div data-bind="with: yubinuki">
 			<table class="table">
 				<thead><tr>
-					<th>刺し位置</th><th>向き</th><th></th><th></th><th>色</th><th>段数</th><th></th>
+					<th>刺し位置</th><th>向き</th><th>重ね刺しの指定</th><th></th><th></th><th>色</th><th>段数</th><th></th>
 				</tr></thead>
 				<tbody data-bind="foreach: { data: komaArray, as: 'koma' }">
 					<!-- ko foreach: { data: itoArray, as: 'ito' } -->
@@ -167,10 +167,14 @@
 							<select data-bind="options: $parents[1].availableSasiTypes, value:koma.fmType, optionsText: 'typeName'" />
 						</td>
 						<td>
+							<input type="checkbox" data-bind="checked: koma.fmKomaKagari, enable: $parents[1].fmEnableKasaneSasi">一度に1コマ分</input>
+						</td>
+						<td>
 							<button data-bind="click: koma.addNewIto">色を追加</button>
 						</td>
 						<!-- /ko -->
 						<!-- ko if: $index -->
+						<td></td>
 						<td></td>
 						<td></td>
 						<td></td>

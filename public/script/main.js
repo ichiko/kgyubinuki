@@ -105,7 +105,7 @@ Simulator = (function() {
   }
 
   Simulator.prototype.simulate = function(yubinuki, stepExecute, stepNum) {
-    var kasane, komaNum;
+    var komaNum;
     if (stepExecute == null) {
       stepExecute = false;
     }
@@ -113,7 +113,6 @@ Simulator = (function() {
       stepNum = 0;
     }
     komaNum = yubinuki.config.koma;
-    kasane = yubinuki.kasane;
     console.log("Simulate: stepExecute=", stepExecute, "stepNum=", stepNum);
     if (!yubinuki.prepare()) {
       alert(yubinuki.getErrorMessages());
@@ -121,14 +120,11 @@ Simulator = (function() {
     }
     this.clearAll();
     this.drawScale(komaNum);
-    if (kasane) {
-
-    } else {
-      this.drawSimple(yubinuki, stepExecute, stepNum);
-    }
+    this.draw(yubinuki, stepExecute, stepNum);
     if (SIDE_CUTOFF) {
-      return this.cutoff();
+      this.cutoff();
     }
+    return console.log("Simulate: end");
   };
 
   Simulator.prototype.clearAll = function() {
@@ -156,8 +152,8 @@ Simulator = (function() {
     return this.context.clearRect(PADDING_LEFT + SIMULATOR_WIDTH + 1, KAGARI_TOP - 1, this.canvas.width - (PADDING_LEFT + SIMULATOR_WIDTH + 1), KAGARI_BOTTOM - KAGARI_TOP + 2);
   };
 
-  Simulator.prototype.drawSimple = function(yubinuki, stepExecute, stepNum) {
-    var anchor, chk, color, direction, end_x, koma, komaArray, komaNum, komaWidth, loopNum, more_one, offset, resolution, sameRound, sasiEnd, sasiOffset, sasiStart, sasiWidth, start_x, stepCount, tobiNum, type, _results;
+  Simulator.prototype.draw = function(yubinuki, stepExecute, stepNum) {
+    var allFilled, chk, koma, komaArray, komaKagari, komaNum, komaWidth, loopNum, resolution, sasiWidth, stepCount, tobiNum, _results;
     komaNum = yubinuki.config.koma;
     tobiNum = yubinuki.config.tobi;
     resolution = yubinuki.config.resolution;
@@ -165,82 +161,97 @@ Simulator = (function() {
     sasiWidth = komaWidth / resolution;
     loopNum = komaNum * resolution;
     komaArray = yubinuki.getKomaArray();
-    anchor = komaArray[komaArray.length - 1];
+    allFilled = false;
     chk = 0;
     stepCount = 0;
     _results = [];
-    while (!anchor.isFilled() && (!stepExecute || (stepExecute && stepCount < stepNum)) && chk < CHECKER_MAX) {
+    while (!allFilled && (!stepExecute || (stepExecute && stepCount < stepNum)) && chk < CHECKER_MAX) {
       chk += 1;
+      allFilled = true;
       _results.push((function() {
         var _i, _len, _results1;
         _results1 = [];
         for (_i = 0, _len = komaArray.length; _i < _len; _i++) {
           koma = komaArray[_i];
-          offset = koma.offset;
-          type = koma.type;
-          color = koma.currentIto().color;
           if (stepExecute && stepCount >= stepNum) {
             break;
           }
-          stepCount += 1;
-          sameRound = true;
-          _results1.push((function() {
-            var _results2;
-            _results2 = [];
-            while (sameRound) {
-              direction = koma.direction;
-              sasiStart = koma.sasiStartIndex();
-              sasiEnd = koma.sasiEndIndex();
-              sasiOffset = koma.roundCount * sasiWidth;
-              if (type === SasiType.Hiraki) {
-                sasiOffset *= -1;
+          komaKagari = koma.komaKagari;
+          if (komaKagari) {
+            while (!koma.isFilled()) {
+              if (stepExecute && stepCount >= stepNum) {
+                break;
               }
-              start_x = PADDING_LEFT + sasiOffset + komaWidth * sasiStart;
-              end_x = PADDING_LEFT + sasiOffset + komaWidth * sasiEnd;
-              if (type === SasiType.Hiraki) {
-                start_x += SIMULATOR_WIDTH;
-                end_x += SIMULATOR_WIDTH;
-              }
-              this.context.beginPath();
-              this.context.strokeStyle = color;
-              if (direction === Direction.Down) {
-                this.context.moveTo(start_x, KAGARI_TOP);
-                this.context.lineTo(end_x, KAGARI_BOTTOM);
-              } else {
-                this.context.moveTo(start_x, KAGARI_BOTTOM);
-                this.context.lineTo(end_x, KAGARI_TOP);
-              }
-              this.context.stroke();
-              more_one = false;
-              if (end_x >= PADDING_LEFT + SIMULATOR_WIDTH) {
-                more_one = true;
-                start_x -= SIMULATOR_WIDTH;
-                end_x -= SIMULATOR_WIDTH;
-              }
-              if (type === SasiType.Hiraki && end_x <= PADDING_LEFT) {
-                more_one = true;
-                start_x += SIMULATOR_WIDTH;
-                end_x += SIMULATOR_WIDTH;
-              }
-              if (more_one) {
-                this.context.beginPath();
-                this.context.strokeStyle = color;
-                if (direction === Direction.Down) {
-                  this.context.moveTo(start_x, KAGARI_TOP);
-                  this.context.lineTo(end_x, KAGARI_BOTTOM);
-                } else {
-                  this.context.moveTo(start_x, KAGARI_BOTTOM);
-                  this.context.lineTo(end_x, KAGARI_TOP);
-                }
-                this.context.stroke();
-              }
-              _results2.push(sameRound = koma.kagaru());
+              this.drawKomaRound(koma, komaWidth, sasiWidth);
+              stepCount += 1;
             }
-            return _results2;
-          }).call(this));
+          } else {
+            this.drawKomaRound(koma, komaWidth, sasiWidth);
+            stepCount += 1;
+          }
+          _results1.push(allFilled &= koma.isFilled());
         }
         return _results1;
       }).call(this));
+    }
+    return _results;
+  };
+
+  Simulator.prototype.drawKomaRound = function(koma, komaWidth, sasiWidth) {
+    var color, direction, end_x, more_one, offset, sameRound, sasiEnd, sasiOffset, sasiStart, start_x, type, _results;
+    offset = koma.offset;
+    type = koma.type;
+    color = koma.currentIto().color;
+    sameRound = true;
+    _results = [];
+    while (sameRound) {
+      direction = koma.direction;
+      sasiStart = koma.sasiStartIndex();
+      sasiEnd = koma.sasiEndIndex();
+      sasiOffset = koma.roundCount * sasiWidth;
+      if (type === SasiType.Hiraki) {
+        sasiOffset *= -1;
+      }
+      start_x = PADDING_LEFT + sasiOffset + komaWidth * sasiStart;
+      end_x = PADDING_LEFT + sasiOffset + komaWidth * sasiEnd;
+      if (type === SasiType.Hiraki) {
+        start_x += SIMULATOR_WIDTH;
+        end_x += SIMULATOR_WIDTH;
+      }
+      this.context.beginPath();
+      this.context.strokeStyle = color;
+      if (direction === Direction.Down) {
+        this.context.moveTo(start_x, KAGARI_TOP);
+        this.context.lineTo(end_x, KAGARI_BOTTOM);
+      } else {
+        this.context.moveTo(start_x, KAGARI_BOTTOM);
+        this.context.lineTo(end_x, KAGARI_TOP);
+      }
+      this.context.stroke();
+      more_one = false;
+      if (end_x >= PADDING_LEFT + SIMULATOR_WIDTH) {
+        more_one = true;
+        start_x -= SIMULATOR_WIDTH;
+        end_x -= SIMULATOR_WIDTH;
+      }
+      if (type === SasiType.Hiraki && end_x <= PADDING_LEFT) {
+        more_one = true;
+        start_x += SIMULATOR_WIDTH;
+        end_x += SIMULATOR_WIDTH;
+      }
+      if (more_one) {
+        this.context.beginPath();
+        this.context.strokeStyle = color;
+        if (direction === Direction.Down) {
+          this.context.moveTo(start_x, KAGARI_TOP);
+          this.context.lineTo(end_x, KAGARI_BOTTOM);
+        } else {
+          this.context.moveTo(start_x, KAGARI_BOTTOM);
+          this.context.lineTo(end_x, KAGARI_TOP);
+        }
+        this.context.stroke();
+      }
+      _results.push(sameRound = koma.kagaru());
     }
     return _results;
   };
@@ -354,12 +365,12 @@ ItoVM = (function(_super) {
 KomaVM = (function(_super) {
   __extends(KomaVM, _super);
 
-  function KomaVM(offset, type, config, setDefault) {
+  function KomaVM(offset, type, komaKagari, config, setDefault) {
     var self;
     if (setDefault == null) {
       setDefault = true;
     }
-    KomaVM.__super__.constructor.call(this, offset, type, config);
+    KomaVM.__super__.constructor.call(this, offset, type, komaKagari, config);
     self = this;
     this.fmOffsetValid = ko.observable(true);
     this.fmOffset = ko.computed(NumericCompution({
@@ -381,6 +392,17 @@ KomaVM = (function(_super) {
       },
       write: function(obj) {
         return self.type = obj.typeId;
+      },
+      owner: this
+    });
+    this.fmKomaKagariCheck = ko.observable(self.komaKagari);
+    this.fmKomaKagari = ko.computed({
+      read: function() {
+        return this.fmKomaKagariCheck();
+      },
+      write: function(value) {
+        self.komaKagari = value;
+        return this.fmKomaKagariCheck(value);
       },
       owner: this
     });
@@ -433,9 +455,9 @@ KomaVM = (function(_super) {
 YubinukiVM = (function(_super) {
   __extends(YubinukiVM, _super);
 
-  function YubinukiVM(komaNum, tobiNum, resolution, kasane) {
+  function YubinukiVM(komaNum, tobiNum, resolution) {
     var self;
-    YubinukiVM.__super__.constructor.call(this, komaNum, tobiNum, resolution, kasane);
+    YubinukiVM.__super__.constructor.call(this, komaNum, tobiNum, resolution);
     this.prepared = false;
     this.availableResolutions = [10, 20, 30];
     this.availableSasiTypes = SasiTypeViewModel;
@@ -482,6 +504,9 @@ YubinukiVM = (function(_super) {
       this.updateConfig();
       return true;
     };
+    this.fmEnableKasaneSasi = ko.computed(function() {
+      return self.enableKasaneSasi();
+    });
     this.prepared = true;
   }
 
@@ -501,15 +526,18 @@ YubinukiVM = (function(_super) {
     return this.komaArray();
   };
 
-  YubinukiVM.prototype.addKoma = function(offset, type, setDefault) {
+  YubinukiVM.prototype.addKoma = function(offset, type, komaKagari, setDefault) {
     var koma;
     if (type == null) {
       type = SasiType.Nami;
     }
+    if (komaKagari == null) {
+      komaKagari = false;
+    }
     if (setDefault == null) {
       setDefault = true;
     }
-    koma = new KomaVM(offset, type, this.config, setDefault);
+    koma = new KomaVM(offset, type, komaKagari, this.config, setDefault);
     this.komaArray.push(koma);
     return koma;
   };
@@ -616,9 +644,10 @@ SasiType = {
 Koma = (function(_super) {
   __extends(Koma, _super);
 
-  function Koma(offset, type, config) {
+  function Koma(offset, type, komaKagari, config) {
     this.offset = offset;
     this.type = type;
+    this.komaKagari = komaKagari;
     this.config = config;
     Koma.__super__.constructor.apply(this, arguments);
     this.direction = Direction.Down;
@@ -753,8 +782,7 @@ Koma = (function(_super) {
 Yubinuki = (function(_super) {
   __extends(Yubinuki, _super);
 
-  function Yubinuki(komaNum, tobiNum, resolution, kasane) {
-    this.kasane = kasane;
+  function Yubinuki(komaNum, tobiNum, resolution) {
     Yubinuki.__super__.constructor.apply(this, arguments);
     this.config = {
       koma: komaNum,
@@ -784,14 +812,21 @@ Yubinuki = (function(_super) {
     return true;
   };
 
-  Yubinuki.prototype.addKoma = function(offset, type) {
+  Yubinuki.prototype.addKoma = function(offset, type, komaKagari) {
     var koma;
     if (type == null) {
       type = SasiType.Nami;
     }
-    koma = new Koma(offset, type, this.config);
+    if (komaKagari == null) {
+      komaKagari = false;
+    }
+    koma = new Koma(offset, type, komaKagari, this.config);
     this.getKomaArray().push(koma);
     return koma;
+  };
+
+  Yubinuki.prototype.enableKasaneSasi = function() {
+    return this.getKomaArray().length > 1;
   };
 
   Yubinuki.prototype.validate = function() {

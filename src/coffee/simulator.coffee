@@ -24,7 +24,6 @@ class Simulator
 
 	simulate: (yubinuki, stepExecute = false, stepNum = 0) ->
 		komaNum = yubinuki.config.koma
-		kasane = yubinuki.kasane
 
 		console.log "Simulate: stepExecute=", stepExecute, "stepNum=", stepNum
 
@@ -36,13 +35,12 @@ class Simulator
 
 		@drawScale(komaNum)
 
-		if kasane
-			# TODO
-		else
-			@drawSimple(yubinuki, stepExecute, stepNum)
+		@draw(yubinuki, stepExecute, stepNum)
 
 		if SIDE_CUTOFF
 			@cutoff()
+
+		console.log "Simulate: end"
 
 	clearAll: ->
 		@context.clearRect(0, 0, @canvas.width, @canvas.height);
@@ -64,7 +62,7 @@ class Simulator
 		@context.clearRect(0, KAGARI_TOP - 1, PADDING_LEFT - 1, KAGARI_BOTTOM - KAGARI_TOP + 2)
 		@context.clearRect(PADDING_LEFT + SIMULATOR_WIDTH + 1, KAGARI_TOP - 1, @canvas.width - (PADDING_LEFT + SIMULATOR_WIDTH + 1), KAGARI_BOTTOM - KAGARI_TOP + 2)
 
-	drawSimple: (yubinuki, stepExecute, stepNum) ->
+	draw: (yubinuki, stepExecute, stepNum) ->
 		komaNum = yubinuki.config.koma
 		tobiNum = yubinuki.config.tobi
 		resolution = yubinuki.config.resolution
@@ -74,68 +72,85 @@ class Simulator
 
 		loopNum = komaNum * resolution
 		komaArray = yubinuki.getKomaArray()
-		anchor = komaArray[komaArray.length - 1]
+		allFilled = false
 		chk = 0
 		stepCount = 0
-		while !anchor.isFilled() and ( !stepExecute or (stepExecute and stepCount < stepNum) ) and chk < CHECKER_MAX
+		while !allFilled and ( !stepExecute or (stepExecute and stepCount < stepNum) ) and chk < CHECKER_MAX
 			chk += 1
 
-			for koma in komaArray
-				offset = koma.offset
-				type = koma.type
-				color = koma.currentIto().color
+			allFilled = true
 
+			for koma in komaArray
 				if stepExecute and stepCount >= stepNum
 					break
 
-				stepCount += 1
-				sameRound = true
-				while sameRound
-					direction = koma.direction
-					sasiStart = koma.sasiStartIndex()
-					sasiEnd = koma.sasiEndIndex()
-					sasiOffset = koma.roundCount * sasiWidth
-					if type == SasiType.Hiraki
-						sasiOffset *= -1
+				komaKagari = koma.komaKagari
+				if komaKagari
+					while !koma.isFilled()
+						if stepExecute and stepCount >= stepNum
+							break
 
-					start_x = PADDING_LEFT + sasiOffset + komaWidth * sasiStart
-					end_x = PADDING_LEFT + sasiOffset + komaWidth * sasiEnd
+						@drawKomaRound(koma, komaWidth, sasiWidth)
+						stepCount += 1
+				else
+					@drawKomaRound(koma, komaWidth, sasiWidth)
+					stepCount += 1
 
-					if type == SasiType.Hiraki
-						start_x += SIMULATOR_WIDTH
-						end_x += SIMULATOR_WIDTH
+				allFilled &= koma.isFilled()
 
-					@context.beginPath()
-					@context.strokeStyle = color
-					if direction == Direction.Down
-						@context.moveTo(start_x, KAGARI_TOP)
-						@context.lineTo(end_x, KAGARI_BOTTOM)
-					else
-						@context.moveTo(start_x, KAGARI_BOTTOM)
-						@context.lineTo(end_x, KAGARI_TOP)
-					@context.stroke()
+	drawKomaRound: (koma, komaWidth, sasiWidth) ->
+		offset = koma.offset
+		type = koma.type
+		color = koma.currentIto().color
 
-					more_one = false
-					if end_x >= PADDING_LEFT + SIMULATOR_WIDTH
-						more_one = true
-						start_x -= SIMULATOR_WIDTH
-						end_x -= SIMULATOR_WIDTH
-					if type == SasiType.Hiraki and end_x <= PADDING_LEFT
-						more_one = true
-						start_x += SIMULATOR_WIDTH
-						end_x += SIMULATOR_WIDTH
+		sameRound = true
+		while sameRound
+			direction = koma.direction
+			sasiStart = koma.sasiStartIndex()
+			sasiEnd = koma.sasiEndIndex()
+			sasiOffset = koma.roundCount * sasiWidth
+			if type == SasiType.Hiraki
+				sasiOffset *= -1
 
-					if more_one
-						@context.beginPath()
-						@context.strokeStyle = color
-						if direction == Direction.Down
-							@context.moveTo(start_x, KAGARI_TOP)
-							@context.lineTo(end_x, KAGARI_BOTTOM)
-						else
-							@context.moveTo(start_x, KAGARI_BOTTOM)
-							@context.lineTo(end_x, KAGARI_TOP)
-						@context.stroke()
+			start_x = PADDING_LEFT + sasiOffset + komaWidth * sasiStart
+			end_x = PADDING_LEFT + sasiOffset + komaWidth * sasiEnd
 
-					sameRound = koma.kagaru()
+			if type == SasiType.Hiraki
+				start_x += SIMULATOR_WIDTH
+				end_x += SIMULATOR_WIDTH
+
+			@context.beginPath()
+			@context.strokeStyle = color
+			if direction == Direction.Down
+				@context.moveTo(start_x, KAGARI_TOP)
+				@context.lineTo(end_x, KAGARI_BOTTOM)
+			else
+				@context.moveTo(start_x, KAGARI_BOTTOM)
+				@context.lineTo(end_x, KAGARI_TOP)
+			@context.stroke()
+
+			more_one = false
+			if end_x >= PADDING_LEFT + SIMULATOR_WIDTH
+				more_one = true
+				start_x -= SIMULATOR_WIDTH
+				end_x -= SIMULATOR_WIDTH
+			if type == SasiType.Hiraki and end_x <= PADDING_LEFT
+				more_one = true
+				start_x += SIMULATOR_WIDTH
+				end_x += SIMULATOR_WIDTH
+
+			if more_one
+				@context.beginPath()
+				@context.strokeStyle = color
+				if direction == Direction.Down
+					@context.moveTo(start_x, KAGARI_TOP)
+					@context.lineTo(end_x, KAGARI_BOTTOM)
+				else
+					@context.moveTo(start_x, KAGARI_BOTTOM)
+					@context.lineTo(end_x, KAGARI_TOP)
+				@context.stroke()
+
+			sameRound = koma.kagaru()
+
 
 module.exports = Simulator

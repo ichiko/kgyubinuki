@@ -69,8 +69,8 @@ class ItoVM extends Ito
 		}))
 
 class KomaVM extends Koma
-	constructor: (offset, type, config, setDefault = true) ->
-		super offset, type, config
+	constructor: (offset, type, komaKagari, config, setDefault = true) ->
+		super offset, type, komaKagari, config
 
 		self = @
 
@@ -91,6 +91,16 @@ class KomaVM extends Koma
 			SasiTypeViewModel[self.type]
 		write: (obj) ->
 			self.type = obj.typeId
+		owner: @
+		})
+
+		@fmKomaKagariCheck = ko.observable(self.komaKagari)
+		@fmKomaKagari = ko.computed({
+		read: ->
+			@fmKomaKagariCheck()
+		write: (value) ->
+			self.komaKagari = value
+			@fmKomaKagariCheck(value)
 		owner: @
 		})
 
@@ -130,8 +140,8 @@ class KomaVM extends Koma
 		return ito
 
 class YubinukiVM extends Yubinuki
-	constructor: (komaNum, tobiNum, resolution, kasane) ->
-		super komaNum, tobiNum, resolution, kasane
+	constructor: (komaNum, tobiNum, resolution) ->
+		super komaNum, tobiNum, resolution
 
 		@prepared = false
 
@@ -180,6 +190,10 @@ class YubinukiVM extends Yubinuki
 			@updateConfig()
 			return true
 
+		@fmEnableKasaneSasi = ko.computed( ->
+			self.enableKasaneSasi()
+		)
+
 		@prepared = true
 
 	startManualSet: ->
@@ -194,8 +208,8 @@ class YubinukiVM extends Yubinuki
 	getKomaArray: ->
 		@komaArray()
 
-	addKoma: (offset, type = SasiType.Nami, setDefault = true) ->
-		koma = new KomaVM(offset, type, @config, setDefault)
+	addKoma: (offset, type = SasiType.Nami, komaKagari = false, setDefault = true) ->
+		koma = new KomaVM(offset, type, komaKagari, @config, setDefault)
 		@komaArray.push koma
 		return koma
 

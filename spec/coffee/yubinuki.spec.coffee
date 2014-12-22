@@ -36,9 +36,10 @@ describe "Koma", ->
 		config = {resolution: 10}
 
 	it "initialize", ->
-		koma = new Koma(0, SasiType.Nami, config)
+		koma = new Koma(0, SasiType.Nami, false, config)
 		expect(koma.offset).toBe(0)
 		expect(koma.type).toBe(SasiType.Nami)
+		expect(koma.komaKagari).toBe(false)
 		expect(koma.config).toBe(config)
 		expect(koma.direction).toBe(Direction.Down)
 		expect(koma.itoArray.length).toBe(0)
@@ -46,7 +47,7 @@ describe "Koma", ->
 		expect(koma.isValid()).toBe(true)
 
 	it "addIto", ->
-		koma = new Koma(0, SasiType.Nami, config)
+		koma = new Koma(0, SasiType.Nami, false, config)
 		koma.addIto('green', 1)
 		expect(koma.itoArray.length).toBe(1)
 		ito = koma.itoArray[0]
@@ -54,7 +55,7 @@ describe "Koma", ->
 		expect(ito.roundNum).toBe(1)
 
 	it "addIto (2)", ->
-		koma = new Koma(0, SasiType.Nami, config)
+		koma = new Koma(0, SasiType.Nami, false, config)
 		koma.addIto('green', 1)
 		koma.addIto('red', 2)
 		expect(koma.itoArray.length).toBe(2)
@@ -67,7 +68,7 @@ describe "Koma", ->
 		expect(koma.isValid()).toBe(true)
 
 	it "isInvalid error at a Ito", ->
-		koma = new Koma(0, SasiType.Nami, config)
+		koma = new Koma(0, SasiType.Nami, false, config)
 		
 		ito = koma.addIto('red', 0)
 		expect(ito.validate()).toBe(false)
@@ -77,7 +78,7 @@ describe "Koma", ->
 		expect(koma.isValid()).toBe(false)
 
 	it "isInvalid error at itself", ->
-		koma = new Koma(0, SasiType.Nami, config)
+		koma = new Koma(0, SasiType.Nami, false, config)
 
 		ito = koma.addIto('green', 6)
 		expect(ito.validate()).toBe(true)
@@ -91,7 +92,7 @@ describe "Koma", ->
 
 	describe "kagaru", ->
 		it "step", ->
-			koma = new Koma(0, SasiType.Nami, config)
+			koma = new Koma(0, SasiType.Nami, false, config)
 			expect(koma.direction).toBe(Direction.Down)
 			expect(koma.roundCount).toBe(0)
 			expect(koma.kagaru()).toBe(true)
@@ -104,7 +105,7 @@ describe "Koma", ->
 		it "round Up (4:2)", ->
 			config.koma = 4
 			config.tobi = 2
-			koma = new Koma(0, SasiType.Nami, config)
+			koma = new Koma(0, SasiType.Nami, false, config)
 			expect(koma.direction).toBe(Direction.Down)
 			expect(koma.roundCount).toBe(0)
 			for i in [1..3]
@@ -118,7 +119,7 @@ describe "Koma", ->
 		it "round Up (6:2)", ->
 			config.koma = 6
 			config.tobi = 2
-			koma = new Koma(0, SasiType.Nami, config)
+			koma = new Koma(0, SasiType.Nami, false, config)
 			expect(koma.direction).toBe(Direction.Down)
 			expect(koma.roundCount).toBe(0)
 			for i in [1..5]
@@ -132,7 +133,7 @@ describe "Koma", ->
 		it "round Up (5:2)", ->
 			config.koma = 5
 			config.tobi = 2
-			koma = new Koma(0, SasiType.Nami, config)
+			koma = new Koma(0, SasiType.Nami, false, config)
 			expect(koma.direction).toBe(Direction.Down)
 			expect(koma.roundCount).toBe(0)
 			for i in [1..9]
@@ -146,7 +147,7 @@ describe "Koma", ->
 		it "round Up (11:2)", ->
 			config.koma = 11
 			config.tobi = 2
-			koma = new Koma(0, SasiType.Nami, config)
+			koma = new Koma(0, SasiType.Nami, false, config)
 			expect(koma.direction).toBe(Direction.Down)
 			expect(koma.roundCount).toBe(0)
 			for i in [1..21]
@@ -160,7 +161,7 @@ describe "Koma", ->
 		it "round Up (6:3)", ->
 			config.koma = 6
 			config.tobi = 3
-			koma = new Koma(0, SasiType.Nami, config)
+			koma = new Koma(0, SasiType.Nami, false, config)
 			expect(koma.direction).toBe(Direction.Down)
 			expect(koma.roundCount).toBe(0)
 			for i in [1..3]
@@ -174,7 +175,7 @@ describe "Koma", ->
 		it "round Up (10:3)", ->
 			config.koma = 10
 			config.tobi = 3
-			koma = new Koma(0, SasiType.Nami, config)
+			koma = new Koma(0, SasiType.Nami, false, config)
 			expect(koma.direction).toBe(Direction.Down)
 			expect(koma.roundCount).toBe(0)
 			for i in [1..19]
@@ -188,7 +189,7 @@ describe "Koma", ->
 		it "round Up (15:3)", ->
 			config.koma = 15
 			config.tobi = 3
-			koma = new Koma(0, SasiType.Nami, config)
+			koma = new Koma(0, SasiType.Nami, false, config)
 			expect(koma.direction).toBe(Direction.Down)
 			expect(koma.roundCount).toBe(0)
 			for i in [1..9]
@@ -206,14 +207,14 @@ describe "Koma", ->
 			config.tobi = 2
 
 		it "not filled", ->
-			koma = new Koma(0, SasiType.Nami, config)
+			koma = new Koma(0, SasiType.Nami, false, config)
 			koma.addIto('green', 1)
 			expect(koma.isFilled()).toBe(false)
 			koma.kagaru()
 			expect(koma.isFilled()).toBe(false)
 
 		it "filled", ->
-			koma = new Koma(0, SasiType.Nami, config)
+			koma = new Koma(0, SasiType.Nami, false, config)
 			koma.addIto('green', 1)
 			expect(koma.isFilled()).toBe(false)
 			for i in [1..39]
@@ -228,7 +229,7 @@ describe "Koma", ->
 			config.koma = 4
 			config.tobi = 2
 
-			koma = new Koma(0, SasiType.Nami, config)
+			koma = new Koma(0, SasiType.Nami, false, config)
 			expect(koma.sasiStartIndex()).toBe(0)
 			expect(koma.sasiEndIndex()).toBe(1)
 			koma.kagaru()
@@ -240,7 +241,7 @@ describe "Koma", ->
 			config.koma = 6
 			config.tobi = 3
 
-			koma = new Koma(0, SasiType.Nami, config)
+			koma = new Koma(0, SasiType.Nami, false, config)
 			expect(koma.sasiStartIndex()).toBe(0)
 			expect(koma.sasiEndIndex()).toBe(1.5)
 			koma.kagaru()
@@ -252,7 +253,7 @@ describe "Koma", ->
 			config.koma = 4
 			config.tobi = 2
 
-			koma = new Koma(0, SasiType.Hiraki, config)
+			koma = new Koma(0, SasiType.Hiraki, false, config)
 			expect(koma.sasiStartIndex()).toBe(0)
 			expect(koma.sasiEndIndex()).toBe(-1)
 			koma.kagaru()
@@ -264,7 +265,7 @@ describe "Koma", ->
 			config.koma = 6
 			config.tobi = 3
 
-			koma = new Koma(0, SasiType.Hiraki, config)
+			koma = new Koma(0, SasiType.Hiraki, false, config)
 			expect(koma.sasiStartIndex()).toBe(0)
 			expect(koma.sasiEndIndex()).toBe(-1.5)
 			koma.kagaru()
@@ -276,7 +277,7 @@ describe "Koma", ->
 			config.koma = 4
 			config.tobi = 2
 
-			koma = new Koma(1, SasiType.Nami, config)
+			koma = new Koma(1, SasiType.Nami, false, config)
 			expect(koma.sasiStartIndex()).toBe(1)
 			expect(koma.sasiEndIndex()).toBe(2)
 			koma.kagaru()
@@ -288,7 +289,7 @@ describe "Koma", ->
 			config.koma = 6
 			config.tobi = 3
 
-			koma = new Koma(1, SasiType.Nami, config)
+			koma = new Koma(1, SasiType.Nami, false, config)
 			expect(koma.sasiStartIndex()).toBe(1)
 			expect(koma.sasiEndIndex()).toBe(2.5)
 			koma.kagaru()
@@ -300,7 +301,7 @@ describe "Koma", ->
 			config.koma = 4
 			config.tobi = 2
 
-			koma = new Koma(1, SasiType.Hiraki, config)
+			koma = new Koma(1, SasiType.Hiraki, false, config)
 			expect(koma.sasiStartIndex()).toBe(1)
 			expect(koma.sasiEndIndex()).toBe(0)
 			koma.kagaru()
@@ -312,7 +313,7 @@ describe "Koma", ->
 			config.koma = 6
 			config.tobi = 3
 
-			koma = new Koma(1, SasiType.Hiraki, config)
+			koma = new Koma(1, SasiType.Hiraki, false, config)
 			expect(koma.sasiStartIndex()).toBe(1)
 			expect(koma.sasiEndIndex()).toBe(-0.5)
 			koma.kagaru()
@@ -326,7 +327,7 @@ describe "Koma", ->
 			config.tobi = 2
 
 		it "single", ->
-			koma = new Koma(0, SasiType.Nami, config)
+			koma = new Koma(0, SasiType.Nami, false, config)
 			ito = koma.addIto('green', 1)
 			expect(koma.currentIto()).toBe(ito)
 			for i in [1..8]
@@ -335,7 +336,7 @@ describe "Koma", ->
 			expect(koma.roundCount).toBe(1)
 
 		it "switch", ->
-			koma = new Koma(0, SasiType.Nami, config)
+			koma = new Koma(0, SasiType.Nami, false, config)
 			ito1 = koma.addIto('green', 1)
 			ito2 = koma.addIto('blue', 1)
 			expect(koma.currentIto()).toBe(ito1)
@@ -349,7 +350,7 @@ describe "Koma", ->
 			expect(koma.roundCount).toBe(2)
 
 		it "round", ->
-			koma = new Koma(0, SasiType.Nami, config)
+			koma = new Koma(0, SasiType.Nami, false, config)
 			ito1 = koma.addIto('green', 1)
 			ito2 = koma.addIto('blue', 1)
 			ito3 = koma.addIto('yellow', 1)
@@ -368,7 +369,7 @@ describe "Koma", ->
 			expect(koma.roundCount).toBe(3)
 
 		it "round (1:2:1)", ->
-			koma = new Koma(0, SasiType.Nami, config)
+			koma = new Koma(0, SasiType.Nami, false, config)
 			ito1 = koma.addIto('green', 1)
 			ito2 = koma.addIto('blue', 2)
 			ito3 = koma.addIto('yellow', 1)
@@ -391,7 +392,7 @@ describe "Koma", ->
 			expect(koma.roundCount).toBe(4)
 
 		it "round (2:1:2)", ->
-			koma = new Koma(0, SasiType.Nami, config)
+			koma = new Koma(0, SasiType.Nami, false, config)
 			ito1 = koma.addIto('green', 2)
 			ito2 = koma.addIto('blue', 1)
 			ito3 = koma.addIto('yellow', 2)
@@ -420,20 +421,18 @@ describe "Koma", ->
 describe "Yubinuki", ->
 	describe "initialize", ->
 		it "empty", ->
-			yb = new Yubinuki(8, 2, 20, false)
+			yb = new Yubinuki(8, 2, 20)
 			expect(yb.config.koma).toBe(8)
 			expect(yb.config.tobi).toBe(2)
 			expect(yb.config.resolution).toBe(20)
-			expect(yb.kasane).toBe(false)
 			expect(yb.komaArray.length).toBe(0)
 
 		it "a koma", ->
-			yb = new Yubinuki(8, 2, 20, false)
+			yb = new Yubinuki(8, 2, 20)
 			yb.addKoma(0, SasiType.Nami)
 			expect(yb.config.koma).toBe(8)
 			expect(yb.config.tobi).toBe(2)
 			expect(yb.config.resolution).toBe(20)
-			expect(yb.kasane).toBe(false)
 			expect(yb.komaArray.length).toBe(1)
 
 	describe "prepare", ->
@@ -491,13 +490,15 @@ describe "Yubinuki", ->
 
 	it "addKoma", ->
 		yb = new Yubinuki(6, 2, 10, false)
-		yb.addKoma(0, SasiType.Nami)
-		yb.addKoma(1, SasiType.Hiraki)
+		yb.addKoma(0, SasiType.Nami, true)
+		yb.addKoma(1, SasiType.Hiraki, false)
 		expect(yb.komaArray.length).toBe(2)
 		expect(yb.komaArray[0].offset).toBe(0)
 		expect(yb.komaArray[0].type).toBe(SasiType.Nami)
+		expect(yb.komaArray[0].komaKagari).toBe(true)
 		expect(yb.komaArray[1].offset).toBe(1)
 		expect(yb.komaArray[1].type).toBe(SasiType.Hiraki)
+		expect(yb.komaArray[1].komaKagari).toBe(false)
 
 	it "addKoma (default arg)", ->
 		yb = new Yubinuki(8, 2, 20, false)
@@ -505,6 +506,7 @@ describe "Yubinuki", ->
 		expect(yb.komaArray.length).toBe(1)
 		expect(yb.komaArray[0].offset).toBe(0)
 		expect(yb.komaArray[0].type).toBe(SasiType.Nami)
+		expect(yb.komaArray[0].komaKagari).toBe(false)
 
 	describe "validate", ->
 		it "no koma", ->
