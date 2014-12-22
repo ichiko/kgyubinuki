@@ -22,6 +22,12 @@ SIDE_CUTOFF = false
 class Simulator
 	constructor: (@canvas, @context) ->
 
+	drawScaleOnly: (yubinuki) ->
+		komaNum = yubinuki.config.koma
+
+		@clearAll()
+		@drawScale(komaNum)
+
 	simulate: (yubinuki, stepExecute = false, stepNum = 0) ->
 		komaNum = yubinuki.config.koma
 
@@ -29,7 +35,8 @@ class Simulator
 
 		if !yubinuki.prepare()
 			alert(yubinuki.getErrorMessages())
-			return
+			console.log "Simulate: state invalid."
+			return false
 
 		@clearAll()
 
@@ -41,6 +48,7 @@ class Simulator
 			@cutoff()
 
 		console.log "Simulate: end"
+		return true
 
 	clearAll: ->
 		@context.clearRect(0, 0, @canvas.width, @canvas.height);

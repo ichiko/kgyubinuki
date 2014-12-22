@@ -215,11 +215,19 @@
 					<span data-bind="text: stepNum"></span>段
 					<div id="slider" class="slider" data-bind="slider: { value: stepNum, realtime: true, min: 1, max: stepMax }"></div>
 				</p>
+				<p>
+					<input type="checkbox" data-bind="checked: showAnimation">アニメーション表示する</input>
+					<div class="progress">
+						<div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100" data-bind="style: { width: animationProgress() + '%' }">
+							<span data-bind="text: animationStep() + ' / ' + animationStepMax() + ' (' + animationProgress() + '%)'"></span>
+						</div>
+					</div>
+				</p>
 			</div>
-<!--
-			<button data-bind="click: addPattern">手順の追加</button>
--->
-			<button data-bind="click: simulate">シミュレート</button>
+
+			<div>
+				<button data-bind="click: simulate">シミュレート</button>
+			</div>
 
 			<!-- ko with:yubinuki -->
 			<p data-bind="visible: fmUseOneKoma">UseOne Koma only</p>

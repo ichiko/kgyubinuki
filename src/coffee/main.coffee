@@ -5,6 +5,8 @@ Simulator = require './simulator'
 #  Application
 # ===============
 
+ANIMATION_INTERVAL_MS = 500
+
 class YubinukiSimulatorVM
 	constructor: ->
 		canvas = document.getElementById('canvas');
@@ -13,6 +15,7 @@ class YubinukiSimulatorVM
 
 		self = @
 
+		@executing = false
 		@simulator = new Simulator(canvas, cc)
 		@yubinuki = ko.observable(new YubinukiVM(8, 2, 30, false))
 		@stepSimulation = ko.observable(false)
@@ -24,6 +27,14 @@ class YubinukiSimulatorVM
 			console.log "stepMax", max
 			return max
 		, @)
+		@showAnimation = ko.observable(false)
+		@animationStep = ko.observable(0)
+		@animationStepMax = ko.observable(@stepMax())
+		@animationProgress = ko.computed( ->
+			Math.ceil(self.animationStep() / self.animationStepMax() * 100)
+		)
+
+		@simulator.drawScaleOnly(@yubinuki())
 
 		# TEST
 		yb = @yubinuki()
@@ -37,8 +48,43 @@ class YubinukiSimulatorVM
 		yb.endManualSet()
 
 	simulate: ->
+		if @executing
+			console.log "前回のシミュレーションが終了していません。しばらくお待ちください。"
+			return
+
+		@executing = true
 		yubinuki = @getYubinuki()
-		@simulator.simulate(yubinuki, @stepSimulation(), @stepNum())
+		animation = @showAnimation()
+
+		if animation
+			animationStepMax = @stepMax()
+			if @stepSimulation()
+				animationStepMax = @stepNum()
+			@animationStepMax(animationStepMax)
+
+			console.log "Simulator Mode ANIMATION, maxStep=", animationStepMax
+
+			@animationStep(0)
+			animationSimulator = @
+			animationCb = null
+			animate = ->
+				animationStep = animationSimulator.animationStep()
+				if animationStep >= animationStepMax
+					clearInterval(animationCb)
+					animationSimulator.simulateEnded()
+					return
+				animationSimulator.animationStep(animationStep + 1)
+				ret = animationSimulator.simulator.simulate(yubinuki, true, animationStep)
+				if !ret
+					clearInterval(animationCb)
+					animationSimulator.simulateEnded()
+			animationCb = setInterval(animate, ANIMATION_INTERVAL_MS)
+		else
+			@simulator.simulate(yubinuki, @stepSimulation(), @stepNum())
+			@simulateEnded()
+
+	simulateEnded: ->
+		@executing = false
 
 		canvas = document.getElementById('canvas');
 		cc = canvas.getContext('2d');

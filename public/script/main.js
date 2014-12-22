@@ -1,9 +1,11 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var ItoVM, KomaVM, SasiType, Simulator, YubinukiSimulatorVM, YubinukiVM, _ref;
+var ANIMATION_INTERVAL_MS, ItoVM, KomaVM, SasiType, Simulator, YubinukiSimulatorVM, YubinukiVM, _ref;
 
 Simulator = require('./simulator');
 
 _ref = require('./viewmodel'), ItoVM = _ref.ItoVM, KomaVM = _ref.KomaVM, YubinukiVM = _ref.YubinukiVM, SasiType = _ref.SasiType;
+
+ANIMATION_INTERVAL_MS = 500;
 
 YubinukiSimulatorVM = (function() {
   function YubinukiSimulatorVM() {
@@ -12,6 +14,7 @@ YubinukiSimulatorVM = (function() {
     cc = canvas.getContext('2d');
     cc.save();
     self = this;
+    this.executing = false;
     this.simulator = new Simulator(canvas, cc);
     this.yubinuki = ko.observable(new YubinukiVM(8, 2, 30, false));
     this.stepSimulation = ko.observable(false);
@@ -23,6 +26,13 @@ YubinukiSimulatorVM = (function() {
       console.log("stepMax", max);
       return max;
     }, this);
+    this.showAnimation = ko.observable(false);
+    this.animationStep = ko.observable(0);
+    this.animationStepMax = ko.observable(this.stepMax());
+    this.animationProgress = ko.computed(function() {
+      return Math.ceil(self.animationStep() / self.animationStepMax() * 100);
+    });
+    this.simulator.drawScaleOnly(this.yubinuki());
     yb = this.yubinuki();
     yb.startManualSet();
     yb.clearKoma();
@@ -35,9 +45,49 @@ YubinukiSimulatorVM = (function() {
   }
 
   YubinukiSimulatorVM.prototype.simulate = function() {
-    var canvas, cc, yubinuki;
+    var animate, animation, animationCb, animationSimulator, animationStepMax, yubinuki;
+    if (this.executing) {
+      console.log("前回のシミュレーションが終了していません。しばらくお待ちください。");
+      return;
+    }
+    this.executing = true;
     yubinuki = this.getYubinuki();
-    this.simulator.simulate(yubinuki, this.stepSimulation(), this.stepNum());
+    animation = this.showAnimation();
+    if (animation) {
+      animationStepMax = this.stepMax();
+      if (this.stepSimulation()) {
+        animationStepMax = this.stepNum();
+      }
+      this.animationStepMax(animationStepMax);
+      console.log("Simulator Mode ANIMATION, maxStep=", animationStepMax);
+      this.animationStep(0);
+      animationSimulator = this;
+      animationCb = null;
+      animate = function() {
+        var animationStep, ret;
+        animationStep = animationSimulator.animationStep();
+        if (animationStep >= animationStepMax) {
+          clearInterval(animationCb);
+          animationSimulator.simulateEnded();
+          return;
+        }
+        animationSimulator.animationStep(animationStep + 1);
+        ret = animationSimulator.simulator.simulate(yubinuki, true, animationStep);
+        if (!ret) {
+          clearInterval(animationCb);
+          return animationSimulator.simulateEnded();
+        }
+      };
+      return animationCb = setInterval(animate, ANIMATION_INTERVAL_MS);
+    } else {
+      this.simulator.simulate(yubinuki, this.stepSimulation(), this.stepNum());
+      return this.simulateEnded();
+    }
+  };
+
+  YubinukiSimulatorVM.prototype.simulateEnded = function() {
+    var canvas, cc;
+    this.executing = false;
     canvas = document.getElementById('canvas');
     cc = canvas.getContext('2d');
     return cc.restore();
@@ -104,6 +154,13 @@ Simulator = (function() {
     this.context = context;
   }
 
+  Simulator.prototype.drawScaleOnly = function(yubinuki) {
+    var komaNum;
+    komaNum = yubinuki.config.koma;
+    this.clearAll();
+    return this.drawScale(komaNum);
+  };
+
   Simulator.prototype.simulate = function(yubinuki, stepExecute, stepNum) {
     var komaNum;
     if (stepExecute == null) {
@@ -116,7 +173,8 @@ Simulator = (function() {
     console.log("Simulate: stepExecute=", stepExecute, "stepNum=", stepNum);
     if (!yubinuki.prepare()) {
       alert(yubinuki.getErrorMessages());
-      return;
+      console.log("Simulate: state invalid.");
+      return false;
     }
     this.clearAll();
     this.drawScale(komaNum);
@@ -124,7 +182,8 @@ Simulator = (function() {
     if (SIDE_CUTOFF) {
       this.cutoff();
     }
-    return console.log("Simulate: end");
+    console.log("Simulate: end");
+    return true;
   };
 
   Simulator.prototype.clearAll = function() {
