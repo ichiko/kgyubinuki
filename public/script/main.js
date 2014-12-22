@@ -153,7 +153,7 @@ Simulator = (function() {
   };
 
   Simulator.prototype.draw = function(yubinuki, stepExecute, stepNum) {
-    var allFilled, chk, koma, komaArray, komaKagari, komaNum, komaWidth, loopNum, resolution, sasiWidth, stepCount, tobiNum, _results;
+    var allFilled, chk, koma, komaArray, komaKagari, komaNum, komaWidth, loopNum, prevKoma, resolution, sasiWidth, stepCount, tobiNum, _results;
     komaNum = yubinuki.config.koma;
     tobiNum = yubinuki.config.tobi;
     resolution = yubinuki.config.resolution;
@@ -168,6 +168,7 @@ Simulator = (function() {
     while (!allFilled && (!stepExecute || (stepExecute && stepCount < stepNum)) && chk < CHECKER_MAX) {
       chk += 1;
       allFilled = true;
+      prevKoma = null;
       _results.push((function() {
         var _i, _len, _results1;
         _results1 = [];
@@ -178,6 +179,9 @@ Simulator = (function() {
           }
           komaKagari = koma.komaKagari;
           if (komaKagari) {
+            if (prevKoma !== null && !prevKoma.komaKagari && !prevKoma.isFilled()) {
+              continue;
+            }
             while (!koma.isFilled()) {
               if (stepExecute && stepCount >= stepNum) {
                 break;
@@ -186,6 +190,7 @@ Simulator = (function() {
               stepCount += 1;
             }
           } else {
+            prevKoma = koma;
             this.drawKomaRound(koma, komaWidth, sasiWidth);
             stepCount += 1;
           }
@@ -535,7 +540,7 @@ YubinukiVM = (function(_super) {
       komaKagari = false;
     }
     if (setDefault == null) {
-      setDefault = true;
+      setDefault = !this.manualMode;
     }
     koma = new KomaVM(offset, type, komaKagari, this.config, setDefault);
     this.komaArray.push(koma);

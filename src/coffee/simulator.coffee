@@ -80,12 +80,15 @@ class Simulator
 
 			allFilled = true
 
+			prevKoma = null
 			for koma in komaArray
 				if stepExecute and stepCount >= stepNum
 					break
 
 				komaKagari = koma.komaKagari
 				if komaKagari
+					if prevKoma != null and !prevKoma.komaKagari and !prevKoma.isFilled()
+						continue
 					while !koma.isFilled()
 						if stepExecute and stepCount >= stepNum
 							break
@@ -93,6 +96,7 @@ class Simulator
 						@drawKomaRound(koma, komaWidth, sasiWidth)
 						stepCount += 1
 				else
+					prevKoma = koma
 					@drawKomaRound(koma, komaWidth, sasiWidth)
 					stepCount += 1
 
