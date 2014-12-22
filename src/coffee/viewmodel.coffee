@@ -208,7 +208,7 @@ class YubinukiVM extends Yubinuki
 	getKomaArray: ->
 		@komaArray()
 
-	addKoma: (offset, type = SasiType.Nami, komaKagari = false, setDefault = true) ->
+	addKoma: (offset, type = SasiType.Nami, komaKagari = false, setDefault = !@manualMode) ->
 		koma = new KomaVM(offset, type, komaKagari, @config, setDefault)
 		@komaArray.push koma
 		return koma
