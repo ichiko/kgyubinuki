@@ -14,6 +14,13 @@ npm install
 grunt install
 ```
 
+### build
+
+```
+grunt bower
+grunt build
+```
+
 ### start server and play
 
 ```
