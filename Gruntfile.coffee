@@ -40,5 +40,6 @@ module.exports = (grunt) ->
 	grunt.loadNpmTasks 'grunt-browserify'
 	grunt.loadNpmTasks 'grunt-contrib-jasmine'
 	grunt.registerTask 'default', ['watch']
+	grunt.registerTask 'build', ['browserify:app']
 	grunt.registerTask 'spec', ['browserify:spec', 'jasmine']
 	return
