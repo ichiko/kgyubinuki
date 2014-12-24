@@ -146,7 +146,7 @@ SCALE_TEXT_COLOR = '#000';
 
 CHECKER_MAX = 100;
 
-SIDE_CUTOFF = false;
+SIDE_CUTOFF = true;
 
 Simulator = (function() {
   function Simulator(canvas, context) {

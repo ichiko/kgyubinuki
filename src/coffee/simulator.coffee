@@ -17,7 +17,7 @@ SCALE_TEXT_COLOR = '#000'
 
 CHECKER_MAX = 100
 
-SIDE_CUTOFF = false
+SIDE_CUTOFF = true
 
 class Simulator
 	constructor: (@canvas, @context) ->
