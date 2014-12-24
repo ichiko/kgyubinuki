@@ -43,7 +43,7 @@ class YubinukiSimulatorVM
 		koma = yb.addKoma(0, SasiType.Nami, false)
 		koma.addIto('blue', 5)
 		koma.addIto('skyblue', 5)
-		koma = yb.addKoma(1, SasiType.Hiraki, false)
+		koma = yb.addKoma(1, SasiType.Nami, false)
 		koma.addIto('red', 1)
 		yb.endManualSet()
 
