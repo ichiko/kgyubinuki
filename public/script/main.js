@@ -32,7 +32,6 @@ YubinukiSimulatorVM = (function() {
     this.animationProgress = ko.computed(function() {
       return Math.ceil(self.animationStep() / self.animationStepMax() * 100);
     });
-    this.simulator.drawScaleOnly(this.yubinuki());
     yb = this.yubinuki();
     yb.startManualSet();
     yb.clearKoma();
@@ -42,6 +41,7 @@ YubinukiSimulatorVM = (function() {
     koma = yb.addKoma(1, SasiType.Nami, false);
     koma.addIto('red', 1);
     yb.endManualSet();
+    this.simulate();
   }
 
   YubinukiSimulatorVM.prototype.simulate = function() {

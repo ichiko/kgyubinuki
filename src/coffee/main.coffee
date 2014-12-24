@@ -34,8 +34,6 @@ class YubinukiSimulatorVM
 			Math.ceil(self.animationStep() / self.animationStepMax() * 100)
 		)
 
-		@simulator.drawScaleOnly(@yubinuki())
-
 		# TEST
 		yb = @yubinuki()
 		yb.startManualSet()
@@ -46,6 +44,8 @@ class YubinukiSimulatorVM
 		koma = yb.addKoma(1, SasiType.Nami, false)
 		koma.addIto('red', 1)
 		yb.endManualSet()
+
+		@simulate()
 
 	simulate: ->
 		if @executing
