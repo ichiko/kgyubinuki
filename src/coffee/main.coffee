@@ -49,7 +49,7 @@ class YubinukiSimulatorVM
 
 	simulate: ->
 		if @executing
-			console.log "前回のシミュレーションが終了していません。しばらくお待ちください。"
+			alert("前回のシミュレーションが終了していません。しばらくお待ちください。")
 			return
 
 		@executing = true

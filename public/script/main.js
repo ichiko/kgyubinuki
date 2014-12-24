@@ -47,7 +47,7 @@ YubinukiSimulatorVM = (function() {
   YubinukiSimulatorVM.prototype.simulate = function() {
     var animate, animation, animationCb, animationSimulator, animationStepMax, yubinuki;
     if (this.executing) {
-      console.log("前回のシミュレーションが終了していません。しばらくお待ちください。");
+      alert("前回のシミュレーションが終了していません。しばらくお待ちください。");
       return;
     }
     this.executing = true;
