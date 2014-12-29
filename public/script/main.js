@@ -16,6 +16,7 @@ YubinukiSimulatorVM = (function() {
     self = this;
     this.executing = false;
     this.simulator = new Simulator(canvas, cc);
+    this.simulator.canvasResized();
     this.yubinuki = ko.observable(new YubinukiVM(8, 2, 30, false));
     this.stepSimulation = ko.observable(false);
     this.stepNum = ko.observable(10);
@@ -118,6 +119,7 @@ setCanvasSize = function() {
   canvas1.width = canvasContainer.width();
   canvas1.height = canvasContainer.height();
   console.log(canvas1.width, canvas1.height);
+  vm.simulator.canvasResized();
   return vm.simulate(true);
 };
 
@@ -152,23 +154,26 @@ console.log("hoge");
 
 
 },{"./simulator":2,"./viewmodel":3}],2:[function(require,module,exports){
-var CHECKER_MAX, Direction, Ito, KAGARI_BOTTOM, KAGARI_TOP, Koma, PADDING_LEFT, SCALE_BOTTOM, SCALE_LABEL_TOP, SCALE_LINE_COLOR, SCALE_TEXT_COLOR, SCALE_TOP, SIDE_CUTOFF, SIMULATOR_WIDTH, SasiType, Simulator, ValidatableModel, Yubinuki, _ref;
+var CHECKER_MAX, Direction, Ito, Koma, SCALE_LINE_COLOR, SCALE_TEXT_COLOR, SIDE_CUTOFF, SasiType, Simulator, SimulatorConfig, ValidatableModel, Yubinuki, _ref;
 
 _ref = require('./yubinuki'), ValidatableModel = _ref.ValidatableModel, Ito = _ref.Ito, Koma = _ref.Koma, Yubinuki = _ref.Yubinuki, Direction = _ref.Direction, SasiType = _ref.SasiType;
 
-PADDING_LEFT = 60;
-
-SIMULATOR_WIDTH = 400;
-
-SCALE_TOP = 30;
-
-SCALE_BOTTOM = 110;
-
-SCALE_LABEL_TOP = SCALE_TOP - 10;
-
-KAGARI_TOP = 50;
-
-KAGARI_BOTTOM = 90;
+SimulatorConfig = {
+  Width: 400,
+  Margin: {
+    Left: 60,
+    Top: 30
+  },
+  Scale: {
+    Top: 30,
+    Bottom: 110,
+    LabelTop: 20
+  },
+  Kagari: {
+    Top: 50,
+    Bottom: 90
+  }
+};
 
 SCALE_LINE_COLOR = '#000';
 
@@ -189,6 +194,14 @@ Simulator = (function() {
     komaNum = yubinuki.config.koma;
     this.clearAll();
     return this.drawScale(komaNum);
+  };
+
+  Simulator.prototype.canvasResized = function() {
+    var height, width;
+    console.log(this.canvas);
+    width = this.canvas.width;
+    height = this.canvas.height;
+    return console.log(width, height);
   };
 
   Simulator.prototype.simulate = function(yubinuki, stepExecute, stepNum, silent) {
@@ -226,24 +239,32 @@ Simulator = (function() {
   };
 
   Simulator.prototype.drawScale = function(komaNum) {
-    var i, komaWidth, _i, _results;
-    komaWidth = SIMULATOR_WIDTH / komaNum;
+    var i, komaWidth, left, scaleBottom, scaleTop, _i, _results;
+    komaWidth = SimulatorConfig.Width / komaNum;
+    left = SimulatorConfig.Margin.Left;
+    scaleTop = SimulatorConfig.Scale.Top;
+    scaleBottom = SimulatorConfig.Scale.Bottom;
     _results = [];
     for (i = _i = 0; 0 <= komaNum ? _i <= komaNum : _i >= komaNum; i = 0 <= komaNum ? ++_i : --_i) {
       this.context.beginPath();
       this.context.strokeStyle = SCALE_LINE_COLOR;
-      this.context.moveTo(PADDING_LEFT + komaWidth * i, SCALE_TOP);
-      this.context.lineTo(PADDING_LEFT + komaWidth * i, SCALE_BOTTOM);
+      this.context.moveTo(left + komaWidth * i, scaleTop);
+      this.context.lineTo(left + komaWidth * i, scaleBottom);
       this.context.stroke();
       this.context.textAlign = 'center';
-      _results.push(this.context.fillText(i, PADDING_LEFT + komaWidth * i, SCALE_LABEL_TOP));
+      _results.push(this.context.fillText(i, left + komaWidth * i, SimulatorConfig.Scale.LabelTop));
     }
     return _results;
   };
 
   Simulator.prototype.cutoff = function() {
-    this.context.clearRect(0, KAGARI_TOP - 1, PADDING_LEFT - 1, KAGARI_BOTTOM - KAGARI_TOP + 2);
-    return this.context.clearRect(PADDING_LEFT + SIMULATOR_WIDTH + 1, KAGARI_TOP - 1, this.canvas.width - (PADDING_LEFT + SIMULATOR_WIDTH + 1), KAGARI_BOTTOM - KAGARI_TOP + 2);
+    var kagariBottom, kagariTop, left, width;
+    width = SimulatorConfig.Width;
+    left = SimulatorConfig.Margin.Left;
+    kagariTop = SimulatorConfig.Kagari.Top;
+    kagariBottom = SimulatorConfig.Kagari.Bottom;
+    this.context.clearRect(0, kagariTop - 1, left - 1, kagariBottom - kagariTop + 2);
+    return this.context.clearRect(left + width + 1, kagariTop - 1, this.canvas.width - (left + width + 1), kagariBottom - kagariTop + 2);
   };
 
   Simulator.prototype.draw = function(yubinuki, stepExecute, stepNum) {
@@ -251,7 +272,7 @@ Simulator = (function() {
     komaNum = yubinuki.config.koma;
     tobiNum = yubinuki.config.tobi;
     resolution = yubinuki.config.resolution;
-    komaWidth = SIMULATOR_WIDTH / komaNum;
+    komaWidth = SimulatorConfig.Width / komaNum;
     sasiWidth = komaWidth / resolution;
     loopNum = komaNum * resolution;
     komaArray = yubinuki.getKomaArray();
@@ -297,10 +318,14 @@ Simulator = (function() {
   };
 
   Simulator.prototype.drawKomaRound = function(koma, komaWidth, sasiWidth) {
-    var color, direction, end_x, more_one, offset, sameRound, sasiEnd, sasiOffset, sasiStart, start_x, type, _results;
+    var color, direction, end_x, kagariBottom, kagariTop, left, more_one, offset, sameRound, sasiEnd, sasiOffset, sasiStart, simulatorWidth, start_x, type, _results;
     offset = koma.offset;
     type = koma.type;
     color = koma.currentIto().color;
+    simulatorWidth = SimulatorConfig.Width;
+    left = SimulatorConfig.Margin.Left;
+    kagariTop = SimulatorConfig.Kagari.Top;
+    kagariBottom = SimulatorConfig.Kagari.Bottom;
     sameRound = true;
     _results = [];
     while (sameRound) {
@@ -311,42 +336,42 @@ Simulator = (function() {
       if (type === SasiType.Hiraki) {
         sasiOffset *= -1;
       }
-      start_x = PADDING_LEFT + sasiOffset + komaWidth * sasiStart;
-      end_x = PADDING_LEFT + sasiOffset + komaWidth * sasiEnd;
+      start_x = left + sasiOffset + komaWidth * sasiStart;
+      end_x = left + sasiOffset + komaWidth * sasiEnd;
       if (type === SasiType.Hiraki) {
-        start_x += SIMULATOR_WIDTH;
-        end_x += SIMULATOR_WIDTH;
+        start_x += simulatorWidth;
+        end_x += simulatorWidth;
       }
       this.context.beginPath();
       this.context.strokeStyle = color;
       if (direction === Direction.Down) {
-        this.context.moveTo(start_x, KAGARI_TOP);
-        this.context.lineTo(end_x, KAGARI_BOTTOM);
+        this.context.moveTo(start_x, kagariTop);
+        this.context.lineTo(end_x, kagariBottom);
       } else {
-        this.context.moveTo(start_x, KAGARI_BOTTOM);
-        this.context.lineTo(end_x, KAGARI_TOP);
+        this.context.moveTo(start_x, kagariBottom);
+        this.context.lineTo(end_x, kagariTop);
       }
       this.context.stroke();
       more_one = false;
-      if (end_x >= PADDING_LEFT + SIMULATOR_WIDTH) {
+      if (end_x >= left + simulatorWidth) {
         more_one = true;
-        start_x -= SIMULATOR_WIDTH;
-        end_x -= SIMULATOR_WIDTH;
+        start_x -= simulatorWidth;
+        end_x -= simulatorWidth;
       }
       if (type === SasiType.Hiraki && end_x <= PADDING_LEFT) {
         more_one = true;
-        start_x += SIMULATOR_WIDTH;
-        end_x += SIMULATOR_WIDTH;
+        start_x += simulatorWidth;
+        end_x += simulatorWidth;
       }
       if (more_one) {
         this.context.beginPath();
         this.context.strokeStyle = color;
         if (direction === Direction.Down) {
-          this.context.moveTo(start_x, KAGARI_TOP);
-          this.context.lineTo(end_x, KAGARI_BOTTOM);
+          this.context.moveTo(start_x, kagariTop);
+          this.context.lineTo(end_x, kagariBottom);
         } else {
-          this.context.moveTo(start_x, KAGARI_BOTTOM);
-          this.context.lineTo(end_x, KAGARI_TOP);
+          this.context.moveTo(start_x, kagariBottom);
+          this.context.lineTo(end_x, kagariTop);
         }
         this.context.stroke();
       }

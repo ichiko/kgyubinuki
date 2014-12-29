@@ -17,6 +17,8 @@ class YubinukiSimulatorVM
 
 		@executing = false
 		@simulator = new Simulator(canvas, cc)
+		@simulator.canvasResized()
+
 		@yubinuki = ko.observable(new YubinukiVM(8, 2, 30, false))
 		@stepSimulation = ko.observable(false)
 		@stepNum = ko.observable(10)
@@ -114,6 +116,7 @@ setCanvasSize = ->
 	canvas1.width = canvasContainer.width()
 	canvas1.height = canvasContainer.height()
 	console.log canvas1.width, canvas1.height
+	vm.simulator.canvasResized()
 	vm.simulate(true)
 
 $(window).resize( ->

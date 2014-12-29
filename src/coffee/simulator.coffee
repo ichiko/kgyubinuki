@@ -2,15 +2,18 @@
 
 {ValidatableModel, Ito, Koma, Yubinuki, Direction, SasiType} = require './yubinuki'
 
-PADDING_LEFT = 60
-SIMULATOR_WIDTH = 400
-
-SCALE_TOP = 30
-SCALE_BOTTOM = 110
-SCALE_LABEL_TOP = SCALE_TOP - 10
-
-KAGARI_TOP = 50
-KAGARI_BOTTOM = 90
+SimulatorConfig =
+	Width:    400
+	Margin:
+		Left: 60
+		Top:  30
+	Scale:
+		Top:  30
+		Bottom: 110
+		LabelTop: 20
+	Kagari:
+		Top:  50
+		Bottom: 90
 
 SCALE_LINE_COLOR = '#000'
 SCALE_TEXT_COLOR = '#000'
@@ -27,6 +30,12 @@ class Simulator
 
 		@clearAll()
 		@drawScale(komaNum)
+
+	canvasResized: ->
+		console.log @canvas
+		width = @canvas.width
+		height = @canvas.height
+		console.log width, height
 
 	simulate: (yubinuki, stepExecute = false, stepNum = 0, silent = false) ->
 		komaNum = yubinuki.config.koma
@@ -55,28 +64,36 @@ class Simulator
 		@context.clearRect(0, 0, @canvas.width, @canvas.height);
 
 	drawScale: (komaNum) ->
-		komaWidth = SIMULATOR_WIDTH / komaNum
+		komaWidth = SimulatorConfig.Width / komaNum
+		left = SimulatorConfig.Margin.Left
+		scaleTop = SimulatorConfig.Scale.Top
+		scaleBottom = SimulatorConfig.Scale.Bottom
 
 		for i in [0..komaNum]
 			@context.beginPath()
 			@context.strokeStyle = SCALE_LINE_COLOR
-			@context.moveTo(PADDING_LEFT + komaWidth * i, SCALE_TOP)
-			@context.lineTo(PADDING_LEFT + komaWidth * i, SCALE_BOTTOM)
+			@context.moveTo(left + komaWidth * i, scaleTop)
+			@context.lineTo(left + komaWidth * i, scaleBottom)
 			@context.stroke()
 
 			@context.textAlign = 'center'
-			@context.fillText(i, PADDING_LEFT + komaWidth * i, SCALE_LABEL_TOP)
+			@context.fillText(i, left + komaWidth * i, SimulatorConfig.Scale.LabelTop)
 
 	cutoff: ->
-		@context.clearRect(0, KAGARI_TOP - 1, PADDING_LEFT - 1, KAGARI_BOTTOM - KAGARI_TOP + 2)
-		@context.clearRect(PADDING_LEFT + SIMULATOR_WIDTH + 1, KAGARI_TOP - 1, @canvas.width - (PADDING_LEFT + SIMULATOR_WIDTH + 1), KAGARI_BOTTOM - KAGARI_TOP + 2)
+		width = SimulatorConfig.Width
+		left = SimulatorConfig.Margin.Left
+		kagariTop = SimulatorConfig.Kagari.Top
+		kagariBottom = SimulatorConfig.Kagari.Bottom
+
+		@context.clearRect(0, kagariTop - 1, left - 1, kagariBottom - kagariTop + 2)
+		@context.clearRect(left + width + 1, kagariTop - 1, @canvas.width - (left + width + 1), kagariBottom - kagariTop + 2)
 
 	draw: (yubinuki, stepExecute, stepNum) ->
 		komaNum = yubinuki.config.koma
 		tobiNum = yubinuki.config.tobi
 		resolution = yubinuki.config.resolution
 
-		komaWidth = SIMULATOR_WIDTH / komaNum
+		komaWidth = SimulatorConfig.Width / komaNum
 		sasiWidth = komaWidth / resolution
 
 		loopNum = komaNum * resolution
@@ -116,6 +133,11 @@ class Simulator
 		type = koma.type
 		color = koma.currentIto().color
 
+		simulatorWidth = SimulatorConfig.Width
+		left = SimulatorConfig.Margin.Left
+		kagariTop = SimulatorConfig.Kagari.Top
+		kagariBottom = SimulatorConfig.Kagari.Bottom
+
 		sameRound = true
 		while sameRound
 			direction = koma.direction
@@ -125,42 +147,42 @@ class Simulator
 			if type == SasiType.Hiraki
 				sasiOffset *= -1
 
-			start_x = PADDING_LEFT + sasiOffset + komaWidth * sasiStart
-			end_x = PADDING_LEFT + sasiOffset + komaWidth * sasiEnd
+			start_x = left + sasiOffset + komaWidth * sasiStart
+			end_x = left + sasiOffset + komaWidth * sasiEnd
 
 			if type == SasiType.Hiraki
-				start_x += SIMULATOR_WIDTH
-				end_x += SIMULATOR_WIDTH
+				start_x += simulatorWidth
+				end_x += simulatorWidth
 
 			@context.beginPath()
 			@context.strokeStyle = color
 			if direction == Direction.Down
-				@context.moveTo(start_x, KAGARI_TOP)
-				@context.lineTo(end_x, KAGARI_BOTTOM)
+				@context.moveTo(start_x, kagariTop)
+				@context.lineTo(end_x, kagariBottom)
 			else
-				@context.moveTo(start_x, KAGARI_BOTTOM)
-				@context.lineTo(end_x, KAGARI_TOP)
+				@context.moveTo(start_x, kagariBottom)
+				@context.lineTo(end_x, kagariTop)
 			@context.stroke()
 
 			more_one = false
-			if end_x >= PADDING_LEFT + SIMULATOR_WIDTH
+			if end_x >= left + simulatorWidth
 				more_one = true
-				start_x -= SIMULATOR_WIDTH
-				end_x -= SIMULATOR_WIDTH
+				start_x -= simulatorWidth
+				end_x -= simulatorWidth
 			if type == SasiType.Hiraki and end_x <= PADDING_LEFT
 				more_one = true
-				start_x += SIMULATOR_WIDTH
-				end_x += SIMULATOR_WIDTH
+				start_x += simulatorWidth
+				end_x += simulatorWidth
 
 			if more_one
 				@context.beginPath()
 				@context.strokeStyle = color
 				if direction == Direction.Down
-					@context.moveTo(start_x, KAGARI_TOP)
-					@context.lineTo(end_x, KAGARI_BOTTOM)
+					@context.moveTo(start_x, kagariTop)
+					@context.lineTo(end_x, kagariBottom)
 				else
-					@context.moveTo(start_x, KAGARI_BOTTOM)
-					@context.lineTo(end_x, KAGARI_TOP)
+					@context.moveTo(start_x, kagariBottom)
+					@context.lineTo(end_x, kagariTop)
 				@context.stroke()
 
 			sameRound = koma.kagaru()
