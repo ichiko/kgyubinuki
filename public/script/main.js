@@ -1,5 +1,5 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var ANIMATION_INTERVAL_MS, ItoVM, KomaVM, SasiType, Simulator, YubinukiSimulatorVM, YubinukiVM, _ref;
+var ANIMATION_INTERVAL_MS, ItoVM, KomaVM, RESIZE_WAIT, SasiType, Simulator, YubinukiSimulatorVM, YubinukiVM, canvas1, canvasContainer, queue, setCanvasSize, vm, _ref;
 
 Simulator = require('./simulator');
 
@@ -44,8 +44,11 @@ YubinukiSimulatorVM = (function() {
     this.simulate();
   }
 
-  YubinukiSimulatorVM.prototype.simulate = function() {
+  YubinukiSimulatorVM.prototype.simulate = function(silent) {
     var animate, animation, animationCb, animationSimulator, animationStepMax, yubinuki;
+    if (silent == null) {
+      silent = false;
+    }
     if (this.executing) {
       alert("前回のシミュレーションが終了していません。しばらくお待ちください。");
       return;
@@ -53,7 +56,7 @@ YubinukiSimulatorVM = (function() {
     this.executing = true;
     yubinuki = this.getYubinuki();
     animation = this.showAnimation();
-    if (animation) {
+    if (animation && !silent) {
       animationStepMax = this.stepMax();
       if (this.stepSimulation()) {
         animationStepMax = this.stepNum();
@@ -80,7 +83,7 @@ YubinukiSimulatorVM = (function() {
       };
       return animationCb = setInterval(animate, ANIMATION_INTERVAL_MS);
     } else {
-      this.simulator.simulate(yubinuki, this.stepSimulation(), this.stepNum());
+      this.simulator.simulate(yubinuki, this.stepSimulation(), this.stepNum(), silent);
       return this.simulateEnded();
     }
   };
@@ -101,7 +104,30 @@ YubinukiSimulatorVM = (function() {
 
 })();
 
-ko.applyBindings(new YubinukiSimulatorVM());
+vm = new YubinukiSimulatorVM();
+
+queue = null;
+
+RESIZE_WAIT = 300;
+
+canvasContainer = $("#canvasContainer");
+
+canvas1 = $("#canvas")[0];
+
+setCanvasSize = function() {
+  canvas1.width = canvasContainer.width();
+  canvas1.height = canvasContainer.height();
+  console.log(canvas1.width, canvas1.height);
+  return vm.simulate(true);
+};
+
+$(window).resize(function() {
+  console.log("resize");
+  clearTimeout(queue);
+  return queue = setTimeout(function() {
+    return setCanvasSize();
+  }, RESIZE_WAIT);
+});
 
 $('#colorpallet').hide();
 
@@ -116,6 +142,10 @@ $('#colorpallet_link').click(function() {
   $('#colorpallet_link').html(text);
   return $('#colorpallet').toggle();
 });
+
+ko.applyBindings(vm);
+
+setCanvasSize();
 
 console.log("hoge");
 
@@ -161,7 +191,7 @@ Simulator = (function() {
     return this.drawScale(komaNum);
   };
 
-  Simulator.prototype.simulate = function(yubinuki, stepExecute, stepNum) {
+  Simulator.prototype.simulate = function(yubinuki, stepExecute, stepNum, silent) {
     var komaNum;
     if (stepExecute == null) {
       stepExecute = false;
@@ -169,11 +199,16 @@ Simulator = (function() {
     if (stepNum == null) {
       stepNum = 0;
     }
+    if (silent == null) {
+      silent = false;
+    }
     komaNum = yubinuki.config.koma;
     console.log("Simulate: stepExecute=", stepExecute, "stepNum=", stepNum);
     if (!yubinuki.prepare()) {
-      alert(yubinuki.getErrorMessages());
       console.log("Simulate: state invalid.");
+      if (!silent) {
+        alert(yubinuki.getErrorMessages());
+      }
       return false;
     }
     this.clearAll();

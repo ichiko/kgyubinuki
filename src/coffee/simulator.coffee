@@ -28,14 +28,15 @@ class Simulator
 		@clearAll()
 		@drawScale(komaNum)
 
-	simulate: (yubinuki, stepExecute = false, stepNum = 0) ->
+	simulate: (yubinuki, stepExecute = false, stepNum = 0, silent = false) ->
 		komaNum = yubinuki.config.koma
 
 		console.log "Simulate: stepExecute=", stepExecute, "stepNum=", stepNum
 
 		if !yubinuki.prepare()
-			alert(yubinuki.getErrorMessages())
 			console.log "Simulate: state invalid."
+			if !silent
+				alert(yubinuki.getErrorMessages())
 			return false
 
 		@clearAll()

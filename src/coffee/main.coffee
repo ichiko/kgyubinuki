@@ -47,7 +47,7 @@ class YubinukiSimulatorVM
 
 		@simulate()
 
-	simulate: ->
+	simulate: (silent = false)->
 		if @executing
 			alert("前回のシミュレーションが終了していません。しばらくお待ちください。")
 			return
@@ -56,7 +56,7 @@ class YubinukiSimulatorVM
 		yubinuki = @getYubinuki()
 		animation = @showAnimation()
 
-		if animation
+		if animation && !silent
 			animationStepMax = @stepMax()
 			if @stepSimulation()
 				animationStepMax = @stepNum()
@@ -80,7 +80,7 @@ class YubinukiSimulatorVM
 					animationSimulator.simulateEnded()
 			animationCb = setInterval(animate, ANIMATION_INTERVAL_MS)
 		else
-			@simulator.simulate(yubinuki, @stepSimulation(), @stepNum())
+			@simulator.simulate(yubinuki, @stepSimulation(), @stepNum(), silent)
 			@simulateEnded()
 
 	simulateEnded: ->
@@ -99,7 +99,30 @@ class YubinukiSimulatorVM
 #		return yubinuki
 		@yubinuki()
 
-ko.applyBindings(new YubinukiSimulatorVM())
+vm = new YubinukiSimulatorVM()
+
+# ===============
+#  キャンバスサイズ
+# ===============
+
+queue = null
+RESIZE_WAIT = 300
+canvasContainer = $("#canvasContainer")
+canvas1 = $("#canvas")[0]
+
+setCanvasSize = ->
+	canvas1.width = canvasContainer.width()
+	canvas1.height = canvasContainer.height()
+	console.log canvas1.width, canvas1.height
+	vm.simulate(true)
+
+$(window).resize( ->
+	console.log "resize"
+	clearTimeout(queue)
+	queue = setTimeout( ->
+		setCanvasSize()
+	, RESIZE_WAIT)
+)
 
 # ===============
 #  色一覧 開閉
@@ -116,5 +139,11 @@ $('#colorpallet_link').click ->
 	$('#colorpallet_link').html(text)
 	$('#colorpallet').toggle()
 
+# ===============
+#  Run
+# ===============
+
+ko.applyBindings(vm)
+setCanvasSize()
 
 console.log("hoge")

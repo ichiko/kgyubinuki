@@ -1,11 +1,20 @@
 /* ybnk.css */
 
+@media (max-width: @screen-xs-max) { }
+@media (min-width: @screen-sm-min) and (max-width: @screen-sm-max) { }
+@media (min-width: @screen-md-min) and (max-width: @screen-md-max) { }
+@media (min-width: @screen-lg-min) { }
+
 body > .container {
   padding: 60px 15px 0;
 }
 
 .invalid {
   color: red;
+}
+
+#canvas {
+  border: solid 1px black;
 }
 
 .form-cell {
@@ -15,9 +24,7 @@ body > .container {
 }
 
 .form-cell input {
-  width: 5em;
   margin-left: 20px;
-  text-align: right;
 }
 
 .simulator-option {
@@ -31,6 +38,6 @@ body > .container {
 }
 
 .number{
-  /*width: 5em;*/
+  width: 5em;
   text-align: right;
 }

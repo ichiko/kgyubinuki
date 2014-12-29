@@ -74,19 +74,19 @@
 
 			<h3 class="page-header" id="simulator">シミュレータ</h3>
 
-			<p>
-			<canvas id="canvas" style="border: solid 1px black" width="600" height="120"></canvas>
-			</p>
+			<div id="canvasContainer" height="130">
+			<canvas id="canvas" height="130"></canvas>
+			</div>
 
 			<div data-bind="with: yubinuki">
 				<table>
 					<tbody><tr>
 						<td class="form-cell">
-							コマ: <input data-bind="value: fmKomaNum"/>
+							コマ: <input class="number" data-bind="value: fmKomaNum"/>
 							<p class="invalid" data-bind="visible: !fmKomaValid()">数値を入力してください。</p>
 						</td>
 						<td class="form-cell">
-							トビ: <input data-bind="value: fmTobiNum" />
+							トビ: <input class="number" data-bind="value: fmTobiNum" />
 							<p class="invalid" data-bind="visible: !fmTobiValid()">数値を入力してください。</p>
 						</td>
 						<td class="form-cell">
