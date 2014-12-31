@@ -45,7 +45,7 @@
 
 		<div class="container">
 			<div class="page-header">
-				<h1>加賀ゆびぬき　刺し模様シミュレータ v0.5(20141224)</h1>
+				<h1>加賀ゆびぬき　刺し模様シミュレータ <small>v0.5(20141224)</small></h1>
 			</div>
 
 			<p class="lead">
@@ -54,7 +54,7 @@
 			<ul>
 			<li>手順どおりに、リストにしていけばだいたい再現します。</li>
 			<li>並み刺し、開き刺しに対応しています。</li>
-			<li>重ね刺しに対応しています。一度に1コマ分を一気に刺す場合は、「重ね刺しの指定」にチェックを入れてください。</li>
+			<li>重ね刺しに対応しています。一度に1コマ分を一気に刺す場合は、「まとめ刺し」にチェックを入れてください。</li>
 			<li>各コマで使用する糸の色を指定できます。段数がコマ内の針数に不足するときは、色の指定をくりかえすものとして動きます。</li>
 			</ul>
 			</p>
@@ -78,104 +78,126 @@
 			<canvas id="canvas" height="130"></canvas>
 			</div>
 
-			<div data-bind="with: yubinuki">
-				<table>
-					<tbody><tr>
-						<td class="form-cell">
-							コマ: <input class="number" data-bind="value: fmKomaNum"/>
-							<p class="invalid" data-bind="visible: !fmKomaValid()">数値を入力してください。</p>
-						</td>
-						<td class="form-cell">
-							トビ: <input class="number" data-bind="value: fmTobiNum" />
-							<p class="invalid" data-bind="visible: !fmTobiValid()">数値を入力してください。</p>
-						</td>
-						<td class="form-cell">
-							コマ内の針数: <select data-bind="options: availableResolutions, value: fmResolutionNum"/>
-						</td>
-					</tr></tbody>
-				</table>
+			<div class="ybnk-config" data-bind="with: yubinuki">
+				<div class="col-xs-4 col-sm-2">
+					<label for="inputKomaNum" class="control-label">コマ</label>
+					<input id="inputKomaNum" class="number" data-bind="value: fmKomaNum"/>
+					<p class="invalid" data-bind="visible: !fmKomaValid()">数値を入力してください。
+				</div>
+				<div class="col-xs-4 col-sm-2">
+					<label for="inputTobiNum" class="control-label">トビ</label>
+					<input id="inputTobiNum" class="number" data-bind="value: fmTobiNum" />
+					<p class="invalid" data-bind="visible: !fmTobiValid()">数値を入力してください。</p>
+				</div>
+				<div class="col-xs-4 col-sm-2">
+					<label for="selectResolution" class="control-label">コマ内の針数</label>
+					<select id="selectResolution" data-bind="options: availableResolutions, value: fmResolutionNum"></select>
+				</div>
+				<div class="clear"></div>
 			</div>
 
 			<div class="simulator-option">
-				<p data-bind="with: yubinuki">
-					<input type="checkbox" data-bind="checked: fmUseOneKoma, click: clickUseOneKoma">刺し位置をずらさずに、ひとつだけ使用する(矢鱈縞)</input>
-				</p>
-				<p>
-					<input type="checkbox" data-bind="checked: stepSimulation">途中までシミュレート</input>
+				<div class="form-group" data-bind="with: yubinuki">
+					<input type="checkbox" data-bind="checked: fmUseOneKoma, click: clickUseOneKoma"> 刺し位置をずらさずに、ひとつだけ使用する(矢鱈縞)</input>
+				</div>
+				<div class="form-group">
+					<input type="checkbox" data-bind="checked: stepSimulation"> 途中までシミュレート</input>
 					<span data-bind="text: stepNum"></span>段
 					<div id="slider" class="slider" data-bind="slider: { value: stepNum, realtime: true, min: 1, max: stepMax }"></div>
-				</p>
-				<p>
-					<input type="checkbox" data-bind="checked: showAnimation">アニメーション表示する</input>
+				</div>
+				<div class="form-group">
+					<input type="checkbox" data-bind="checked: showAnimation"> アニメーション表示する</input>
 					<div class="progress">
 						<div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100" data-bind="style: { width: animationProgress() + '%' }">
 							<span data-bind="text: animationStep() + ' / ' + animationStepMax() + ' (' + animationProgress() + '%)'"></span>
 						</div>
 					</div>
-				</p>
+				</div>
 			</div>
 
-			<div>
+			<div class="form-group">
 				<button data-bind="click: simulate">シミュレート</button>
 			</div>
 
-			<!-- ko with:yubinuki -->
-			<p data-bind="visible: fmUseOneKoma">UseOne Koma only</p>
-			<!-- /ko -->
-
-			<div data-bind="with: yubinuki">
-			<table class="table">
-				<thead><tr>
-					<th>刺し位置</th><th>向き</th><th>重ね刺しの指定</th><th></th><th></th><th>色</th><th>段数</th><th></th>
-				</tr></thead>
-				<tbody data-bind="foreach: { data: komaArray, as: 'koma' }">
-					<!-- ko foreach: { data: itoArray, as: 'ito' } -->
-					<tr>
-						<!-- ko ifnot: $index -->
-						<td>
-							<input class="number" data-bind="value: koma.fmOffset"/>
-							<p class="invalid" data-bind="visible: !koma.fmOffsetValid()">0以上<span data-bind="text: $parents[1].fmTobiNum"></span>未満の数値を入力してください。</p>
-						</td>
-						<td>
-							<select data-bind="options: $parents[1].availableSasiTypes, value:koma.fmType, optionsText: 'typeName'" />
-						</td>
-						<td>
-							<input type="checkbox" data-bind="checked: koma.fmKomaKagari, enable: $parents[1].fmEnableKasaneSasi">一度に1コマ分刺す</input>
-						</td>
-						<td>
-							<button data-bind="click: koma.addNewIto">色を追加</button>
-						</td>
-						<!-- /ko -->
-						<!-- ko if: $index -->
-						<td></td>
-						<td></td>
-						<td></td>
-						<td></td>
-						<!-- /ko -->
-						<td>
+			<!-- ko with: yubinuki -->
+			<!-- ko foreach: { data: komaArray, as: 'koma' } -->
+			<div class="panel panel-default koma-config">
+				<div class="panel-heading">
+					<span data-bind="text: 'コマ (' + ($index() + 1) + ')'"></span>
+					<button class="koma-command" data-bind="click: koma.addNewIto">色を追加</button>
+					<div class="clear"></div>
+				</div>
+				<div class="panel-body">
+					<div class="row">
+						<div class="col-sm-6 col-md-4">
+							<div class="form-group row">
+								<label for="inputOffset" class="col-xs-4 col-md-4 control-label">刺し位置</label>
+								<div class="col-xs-8 col-md-8">
+									<input class="form-control number" id="inputOffset" data-bind="value: koma.fmOffset"/>
+									<p class="invalid" data-bind="visible: !koma.fmOffsetValid()">0以上<span data-bind="text: $parents[0].fmTobiNum"></span>未満の数値を入力してください。</p>
+								</div>
+							</div>
+						</div>
+						<div class="col-sm-6 col-md-4">
+							<div class="form-group row">
+								<label for="inputType" class="col-xs-4 col-md-4 control-label">向き</label>
+								<div class="col-xs-8 col-md-8">
+									<select id="inputType" data-bind="options: $parents[0].availableSasiTypes, value:koma.fmType, optionsText: 'typeName'"></select>
+								</div>
+							</div>
+						</div>
+						<div class="col-sm-6 col-md-4">
+							<div class="form-group row">
+								<label for="inputMatomeKagari" class="col-xs-4 col-md-4 control-label">まとめ刺し</label>
+								<div class="col-xs-8 col-md-8">
+									<input type="checkbox" id="inputMatomeKagari" data-bind="checked: koma.fmKomaKagari, enable: $parents[0].fmEnableKasaneSasi">一度に1コマ分刺す</input>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="row row-header">
+						<div class="col-xs-3 col-xs-offset-1 col-sm-2 col-sm-offset-1">
+							<label class="control-label"></label>
+						</div>
+						<div class="col-xs-5 col-sm-4">
+							<label class="control-label">色</label>
+						</div>
+						<div class="clearfix visible-xs-block"></div>
+						<div class="col-xs-4 col-xs-offset-4 col-sm-3 col-sm-offset-0">
+							<label class="control-label">段数</label>
+						</div>
+						<div class="col-xs-4 col-sm-2">
+							<label class="control-label"></label>
+						</div>
+					</div>
+				<!-- ko foreach: { data: itoArray, as: 'ito' } -->
+					<div class="row" data-bind="css: $index() % 2 == 0 ? 'row-odd' : 'row-even' ">
+						<div class="col-link col-xs-3 col-xs-offset-1 col-sm-2 col-sm-offset-1">
 						<!-- ko if: koma.itoArray().length - 1 -->
 							<a href="#" data-bind="click: koma.moveUp">▲</a>
 							<a href="#" data-bind="click: koma.moveDown">▼</a>
 						<!-- /ko -->
-						</td>
-						<td>
-							<input data-bind="value: ito.fmColor" />
+						</div>
+						<div class="col-xs-5 col-sm-4">
+							<input class="form-control" data-bind="value: ito.fmColor" />
 							<p class="invalid" data-bind="visible: !ito.fmColorValid()">色名を入力してください。</p>
-						</td>
-						<td>
-							<input class="number" data-bind="value: ito.fmRound" />
+						</div>
+						<div class="clearfix visible-xs-block"></div>
+						<div class="col-xs-4 col-xs-offset-4 col-sm-3 col-sm-offset-0">
+							<input class="form-control number" data-bind="value: ito.fmRound" />
 							<p class="invalid" data-bind="visible: !ito.fmRoundValid()">1以上の数値を入力してください。</p>
-						</td>
-						<td>
-						<!-- ko if: koma.itoArray().length - 1 -->
-						<button data-bind="click: koma.removeIto">削除</button>
-						<!-- /ko -->
-						</td>
-					</tr>
-					<!-- /ko -->
-				</tbody>
-			</table>
+						</div>
+						<div class="col-xs-4 col-sm-2">
+							<!-- ko if: koma.itoArray().length - 1 -->
+							<button class="btn btn-default" data-bind="click: koma.removeIto">削除</button>
+							<!-- /ko -->
+						</div>
+					</div>
+				<!-- /ko -->
+				</div>
 			</div>
+			<!-- /ko -->
+			<!-- /ko -->
 
 			<h3 id="howto">使い方</h3>
 
@@ -278,7 +300,7 @@
 				</div>
 			</div>
 			<div class="panel panel-default">
-				<div class="panel-heading">Q1. 矢鱈縞(やたらごうし)の模様を作るにはどうすればいいですか?</div>
+				<div class="panel-heading">Q2. 矢鱈縞(やたらごうし)の模様を作るにはどうすればいいですか?</div>
 				<div class="panel-body">
 				<p>A.</p>
 				<p>
@@ -290,7 +312,7 @@
 				</div>
 			</div>
 			<div class="panel panel-default">
-				<div class="panel-heading">Q2. かがり途中の状態を見ることはできますか?</div>
+				<div class="panel-heading">Q3. かがり途中の状態を見ることはできますか?</div>
 				<div class="panel-body">
 				<p>A.</p>
 				<p>

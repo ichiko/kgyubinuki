@@ -13,6 +13,10 @@ body > .container {
   color: red;
 }
 
+#canvasContainer {
+  padding-bottom: 14px;
+}
+
 #canvas {
   border: solid 1px black;
 }
@@ -27,17 +31,54 @@ body > .container {
   margin-left: 20px;
 }
 
+.ybnk-config {
+  width: 100%;
+  margin-bottom: 15px;
+}
+
 .simulator-option {
+  display: block;
   padding: 8px;
 }
 
 .simulator-option .slider {
-  margin: 8px;
-  margin-left: 10px;
-  width: 30em;
+  margin: 8px 10px;
+}
+
+.simulator-option .progress {
+  margin: 8px 10px;
 }
 
 .number{
-  width: 5em;
+  width: 4em;
   text-align: right;
+}
+
+.koma-command {
+  float: right;
+}
+
+.clear {
+  clear: both;
+}
+
+.koma-config .row {
+  padding: 4px 0px;
+}
+
+.koma-config .row .col-link {
+  padding-top: 7px;
+}
+
+.koma-config .row-header {
+  border-bottom: solid 1px gray;
+}
+
+.koma-config .row-odd {
+  border-top: solid 1px gray;
+  background-color: #f9f9f9;
+}
+
+.koma-config .row-even {
+  border-top: solid 1px gray;
 }
