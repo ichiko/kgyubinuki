@@ -154,9 +154,13 @@ console.log("hoge");
 
 
 },{"./simulator":2,"./viewmodel":3}],2:[function(require,module,exports){
-var CHECKER_MAX, Direction, Ito, Koma, SCALE_LINE_COLOR, SCALE_TEXT_COLOR, SIDE_CUTOFF, SasiType, Simulator, SimulatorConfig, ValidatableModel, Yubinuki, _ref;
+var CHECKER_MAX, DEFAULT_SIMULATOR_MARGIN_LEFT, DEFAULT_SIMULATOR_WIDTH, Direction, Ito, Koma, SCALE_LINE_COLOR, SCALE_TEXT_COLOR, SIDE_CUTOFF, SasiType, Simulator, SimulatorConfig, ValidatableModel, Yubinuki, _ref;
 
 _ref = require('./yubinuki'), ValidatableModel = _ref.ValidatableModel, Ito = _ref.Ito, Koma = _ref.Koma, Yubinuki = _ref.Yubinuki, Direction = _ref.Direction, SasiType = _ref.SasiType;
+
+DEFAULT_SIMULATOR_WIDTH = 400;
+
+DEFAULT_SIMULATOR_MARGIN_LEFT = 10;
 
 SimulatorConfig = {
   Width: 400,
@@ -198,10 +202,15 @@ Simulator = (function() {
 
   Simulator.prototype.canvasResized = function() {
     var height, width;
-    console.log(this.canvas);
     width = this.canvas.width;
     height = this.canvas.height;
-    return console.log(width, height);
+    if (width <= DEFAULT_SIMULATOR_WIDTH) {
+      SimulatorConfig.Width = width - DEFAULT_SIMULATOR_MARGIN_LEFT * 2;
+      return SimulatorConfig.Margin.Left = DEFAULT_SIMULATOR_MARGIN_LEFT;
+    } else {
+      SimulatorConfig.Width = DEFAULT_SIMULATOR_WIDTH;
+      return SimulatorConfig.Margin.Left = (width - DEFAULT_SIMULATOR_WIDTH) / 2;
+    }
   };
 
   Simulator.prototype.simulate = function(yubinuki, stepExecute, stepNum, silent) {

@@ -2,6 +2,9 @@
 
 {ValidatableModel, Ito, Koma, Yubinuki, Direction, SasiType} = require './yubinuki'
 
+DEFAULT_SIMULATOR_WIDTH = 400
+DEFAULT_SIMULATOR_MARGIN_LEFT = 10
+
 SimulatorConfig =
 	Width:    400
 	Margin:
@@ -32,10 +35,14 @@ class Simulator
 		@drawScale(komaNum)
 
 	canvasResized: ->
-		console.log @canvas
 		width = @canvas.width
 		height = @canvas.height
-		console.log width, height
+		if width <= DEFAULT_SIMULATOR_WIDTH
+			SimulatorConfig.Width = width - DEFAULT_SIMULATOR_MARGIN_LEFT * 2
+			SimulatorConfig.Margin.Left = DEFAULT_SIMULATOR_MARGIN_LEFT
+		else
+			SimulatorConfig.Width = DEFAULT_SIMULATOR_WIDTH
+			SimulatorConfig.Margin.Left = (width - DEFAULT_SIMULATOR_WIDTH) / 2
 
 	simulate: (yubinuki, stepExecute = false, stepNum = 0, silent = false) ->
 		komaNum = yubinuki.config.koma
