@@ -13,6 +13,7 @@ NumericCompution = (arg) ->
 			arg.write(value)
 			return value
 		write: (value) ->
+			value = value + ""
 			value = parseInt(value.replace(/[^\d\-]/g, ""))
 			if isNaN(value)
 				arg.validFlag(false)
@@ -145,8 +146,12 @@ class YubinukiVM extends Yubinuki
 
 		@prepared = false
 
+		@availableKomaNums = [6,7,8,9,10,11,12,16,18,20,21,24,28,32]
+		@availableTobiNums = [2,3,4,5]
+		@availableOffsets = ko.observableArray([0,1])
 		@availableResolutions = [10, 20, 30]
 		@availableSasiTypes = SasiTypeViewModel
+		@availableRoundNums = ko.observableArray([1,2,3,4,5])
 
 		@komaArray = ko.observableArray()
 
@@ -182,6 +187,7 @@ class YubinukiVM extends Yubinuki
 		write: (value) ->
 			@config.resolution = value
 			@fmResolution(value)
+			@updateConfig()
 		owner: @
 		})
 
@@ -195,6 +201,7 @@ class YubinukiVM extends Yubinuki
 		)
 
 		@prepared = true
+		@updateConfig()
 
 	startManualSet: ->
 		@manualMode = true
@@ -220,6 +227,20 @@ class YubinukiVM extends Yubinuki
 			return
 		komaLen = @komaArray().length
 		tobi = @config.tobi
+
+		@availableOffsets.removeAll()
+		i = 0
+		while i < tobi
+			@availableOffsets.push i
+			i += 1
+
+		resolution = @fmResolution()
+		@availableRoundNums.removeAll()
+		i = 1
+		while i <= resolution
+			@availableRoundNums.push i
+			i += 1
+
 		useOneKoma = @fmUseOneKoma()
 		if useOneKoma
 			tobi = 1

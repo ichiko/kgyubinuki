@@ -81,12 +81,14 @@
 			<div class="ybnk-config" data-bind="with: yubinuki">
 				<div class="col-xs-4 col-sm-2">
 					<label for="inputKomaNum" class="control-label">コマ</label>
-					<input id="inputKomaNum" class="number" data-bind="value: fmKomaNum"/>
+					<input id="inputKomaNum" class="hidden-xs number" data-bind="value: fmKomaNum"/>
+					<select id="inputKomaNum" class="visible-xs" data-bind="options: availableKomaNums, value: fmKomaNum"></select>
 					<p class="invalid" data-bind="visible: !fmKomaValid()">数値を入力してください。
 				</div>
 				<div class="col-xs-4 col-sm-2">
 					<label for="inputTobiNum" class="control-label">トビ</label>
-					<input id="inputTobiNum" class="number" data-bind="value: fmTobiNum" />
+					<input id="inputTobiNum" class="hidden-xs number" data-bind="value: fmTobiNum" />
+					<select id="inputTobiNum" class="visible-xs" data-bind="options: availableTobiNums, value: fmTobiNum"></select>
 					<p class="invalid" data-bind="visible: !fmTobiValid()">数値を入力してください。</p>
 				</div>
 				<div class="col-xs-4 col-sm-2">
@@ -133,7 +135,8 @@
 							<div class="form-group row">
 								<label for="inputOffset" class="col-xs-4 col-md-4 control-label">刺し位置</label>
 								<div class="col-xs-8 col-md-8">
-									<input class="form-control number" id="inputOffset" data-bind="value: koma.fmOffset"/>
+									<input class="hidden-xs form-control number" id="inputOffset" data-bind="value: koma.fmOffset"/>
+									<select id="inputOffset" class="visible-xs form-control" data-bind="options: $parents[0].availableOffsets, value: koma.fmOffset"></select>
 									<p class="invalid" data-bind="visible: !koma.fmOffsetValid()">0以上<span data-bind="text: $parents[0].fmTobiNum"></span>未満の数値を入力してください。</p>
 								</div>
 							</div>
@@ -142,7 +145,7 @@
 							<div class="form-group row">
 								<label for="inputType" class="col-xs-4 col-md-4 control-label">向き</label>
 								<div class="col-xs-8 col-md-8">
-									<select id="inputType" data-bind="options: $parents[0].availableSasiTypes, value:koma.fmType, optionsText: 'typeName'"></select>
+									<select id="inputType" class="form-control" data-bind="options: $parents[0].availableSasiTypes, value:koma.fmType, optionsText: 'typeName'"></select>
 								</div>
 							</div>
 						</div>
@@ -150,7 +153,7 @@
 							<div class="form-group row">
 								<label for="inputMatomeKagari" class="col-xs-4 col-md-4 control-label">まとめ刺し</label>
 								<div class="col-xs-8 col-md-8">
-									<input type="checkbox" id="inputMatomeKagari" data-bind="checked: koma.fmKomaKagari, enable: $parents[0].fmEnableKasaneSasi">一度に1コマ分刺す</input>
+									<input type="checkbox" id="inputMatomeKagari" data-bind="checked: koma.fmKomaKagari, enable: $parents[0].fmEnableKasaneSasi"> 一度に1コマ分刺す</input>
 								</div>
 							</div>
 						</div>
@@ -184,7 +187,8 @@
 						</div>
 						<div class="clearfix visible-xs-block"></div>
 						<div class="col-xs-4 col-xs-offset-4 col-sm-3 col-sm-offset-0">
-							<input class="form-control number" data-bind="value: ito.fmRound" />
+							<input class="hidden-xs form-control number" data-bind="value: ito.fmRound" />
+							<select class="visible-xs form-control" data-bind="options: $parents[1].availableRoundNums, value: ito.fmRound"></select>
 							<p class="invalid" data-bind="visible: !ito.fmRoundValid()">1以上の数値を入力してください。</p>
 						</div>
 						<div class="col-xs-4 col-sm-2">

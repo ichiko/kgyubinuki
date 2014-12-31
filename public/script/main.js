@@ -419,6 +419,7 @@ NumericCompution = function(arg) {
       return value;
     },
     write: function(value) {
+      value = value + "";
       value = parseInt(value.replace(/[^\d\-]/g, ""));
       if (isNaN(value)) {
         return arg.validFlag(false);
@@ -592,8 +593,12 @@ YubinukiVM = (function(_super) {
     var self;
     YubinukiVM.__super__.constructor.call(this, komaNum, tobiNum, resolution);
     this.prepared = false;
+    this.availableKomaNums = [6, 7, 8, 9, 10, 11, 12, 16, 18, 20, 21, 24, 28, 32];
+    this.availableTobiNums = [2, 3, 4, 5];
+    this.availableOffsets = ko.observableArray([0, 1]);
     this.availableResolutions = [10, 20, 30];
     this.availableSasiTypes = SasiTypeViewModel;
+    this.availableRoundNums = ko.observableArray([1, 2, 3, 4, 5]);
     this.komaArray = ko.observableArray();
     self = this;
     this.fmKomaValid = ko.observable(true);
@@ -628,7 +633,8 @@ YubinukiVM = (function(_super) {
       },
       write: function(value) {
         this.config.resolution = value;
-        return this.fmResolution(value);
+        this.fmResolution(value);
+        return this.updateConfig();
       },
       owner: this
     });
@@ -641,6 +647,7 @@ YubinukiVM = (function(_super) {
       return self.enableKasaneSasi();
     });
     this.prepared = true;
+    this.updateConfig();
   }
 
   YubinukiVM.prototype.startManualSet = function() {
@@ -676,7 +683,7 @@ YubinukiVM = (function(_super) {
   };
 
   YubinukiVM.prototype.updateConfig = function() {
-    var i, komaLen, need, remove, tobi, useOneKoma, _i, _results;
+    var i, komaLen, need, remove, resolution, tobi, useOneKoma, _i, _results;
     if (!this.prepared) {
       return;
     }
@@ -685,6 +692,19 @@ YubinukiVM = (function(_super) {
     }
     komaLen = this.komaArray().length;
     tobi = this.config.tobi;
+    this.availableOffsets.removeAll();
+    i = 0;
+    while (i < tobi) {
+      this.availableOffsets.push(i);
+      i += 1;
+    }
+    resolution = this.fmResolution();
+    this.availableRoundNums.removeAll();
+    i = 1;
+    while (i <= resolution) {
+      this.availableRoundNums.push(i);
+      i += 1;
+    }
     useOneKoma = this.fmUseOneKoma();
     if (useOneKoma) {
       tobi = 1;
