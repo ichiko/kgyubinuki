@@ -228,18 +228,24 @@ class YubinukiVM extends Yubinuki
 		komaLen = @komaArray().length
 		tobi = @config.tobi
 
-		@availableOffsets.removeAll()
-		i = 0
-		while i < tobi
-			@availableOffsets.push i
-			i += 1
+		len = @availableOffsets().length
+		if len < tobi
+			need = tobi - len
+			for i in [0..need-1]
+				@availableOffsets.push len + i
+		else if len > tobi
+			remove = len - tobi
+			@availableOffsets.splice(len - remove, remove)
 
 		resolution = @fmResolution()
-		@availableRoundNums.removeAll()
-		i = 1
-		while i <= resolution
-			@availableRoundNums.push i
-			i += 1
+		len = @availableRoundNums().length
+		if len < resolution
+			need = resolution - len
+			for i in [0..need-1]
+				@availableRoundNums.push len + i
+		else if len > resolution
+			remove = len - resolution
+			@availableRoundNums.splice(len - remove, remove)
 
 		useOneKoma = @fmUseOneKoma()
 		if useOneKoma

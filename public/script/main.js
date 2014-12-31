@@ -45,6 +45,10 @@ YubinukiSimulatorVM = (function() {
     this.simulate();
   }
 
+  YubinukiSimulatorVM.prototype.cmdSimulate = function() {
+    return this.simulate();
+  };
+
   YubinukiSimulatorVM.prototype.simulate = function(silent) {
     var animate, animation, animationCb, animationSimulator, animationStepMax, yubinuki;
     if (silent == null) {
@@ -683,7 +687,7 @@ YubinukiVM = (function(_super) {
   };
 
   YubinukiVM.prototype.updateConfig = function() {
-    var i, komaLen, need, remove, resolution, tobi, useOneKoma, _i, _results;
+    var i, komaLen, len, need, remove, resolution, tobi, useOneKoma, _i, _j, _k, _ref1, _ref2, _results;
     if (!this.prepared) {
       return;
     }
@@ -692,18 +696,26 @@ YubinukiVM = (function(_super) {
     }
     komaLen = this.komaArray().length;
     tobi = this.config.tobi;
-    this.availableOffsets.removeAll();
-    i = 0;
-    while (i < tobi) {
-      this.availableOffsets.push(i);
-      i += 1;
+    len = this.availableOffsets().length;
+    if (len < tobi) {
+      need = tobi - len;
+      for (i = _i = 0, _ref1 = need - 1; 0 <= _ref1 ? _i <= _ref1 : _i >= _ref1; i = 0 <= _ref1 ? ++_i : --_i) {
+        this.availableOffsets.push(len + i);
+      }
+    } else if (len > tobi) {
+      remove = len - tobi;
+      this.availableOffsets.splice(len - remove, remove);
     }
     resolution = this.fmResolution();
-    this.availableRoundNums.removeAll();
-    i = 1;
-    while (i <= resolution) {
-      this.availableRoundNums.push(i);
-      i += 1;
+    len = this.availableRoundNums().length;
+    if (len < resolution) {
+      need = resolution - len;
+      for (i = _j = 0, _ref2 = need - 1; 0 <= _ref2 ? _j <= _ref2 : _j >= _ref2; i = 0 <= _ref2 ? ++_j : --_j) {
+        this.availableRoundNums.push(len + i);
+      }
+    } else if (len > resolution) {
+      remove = len - resolution;
+      this.availableRoundNums.splice(len - remove, remove);
     }
     useOneKoma = this.fmUseOneKoma();
     if (useOneKoma) {
@@ -712,7 +724,7 @@ YubinukiVM = (function(_super) {
     if (komaLen < tobi) {
       need = tobi - komaLen;
       _results = [];
-      for (i = _i = 1; 1 <= need ? _i <= need : _i >= need; i = 1 <= need ? ++_i : --_i) {
+      for (i = _k = 1; 1 <= need ? _k <= need : _k >= need; i = 1 <= need ? ++_k : --_k) {
         _results.push(this.addKoma(0));
       }
       return _results;

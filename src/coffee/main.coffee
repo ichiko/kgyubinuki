@@ -49,6 +49,9 @@ class YubinukiSimulatorVM
 
 		@simulate()
 
+	cmdSimulate: ->
+		@simulate()
+
 	simulate: (silent = false)->
 		if @executing
 			alert("前回のシミュレーションが終了していません。しばらくお待ちください。")
