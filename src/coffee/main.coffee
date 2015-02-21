@@ -40,7 +40,7 @@ class YubinukiSimulatorVM
 		@dataToSave = ko.computed( ->
 			JSON.stringify(Formatter.pack(self.yubinuki()))
 		)
-		@dataToLoad = ko.observable("a")
+		@dataToLoad = ko.observable("")
 
 		# TEST
 		yb = @yubinuki()

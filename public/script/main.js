@@ -108,7 +108,7 @@ YubinukiSimulatorVM = (function() {
     this.dataToSave = ko.computed(function() {
       return JSON.stringify(Formatter.pack(self.yubinuki()));
     });
-    this.dataToLoad = ko.observable("a");
+    this.dataToLoad = ko.observable("");
     yb = this.yubinuki();
     yb.startManualSet();
     yb.clearKoma();
