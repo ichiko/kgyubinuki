@@ -1,9 +1,81 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var ANIMATION_INTERVAL_MS, ItoVM, KomaVM, RESIZE_WAIT, SasiType, Simulator, YubinukiSimulatorVM, YubinukiVM, canvas1, canvasContainer, queue, setCanvasSize, vm, _ref;
+var ItoVM, KomaVM, SasiType, YubinukiVM, pack, packIto, packKoma, unpack, _ref;
+
+_ref = require('./viewmodel'), ItoVM = _ref.ItoVM, KomaVM = _ref.KomaVM, YubinukiVM = _ref.YubinukiVM, SasiType = _ref.SasiType;
+
+pack = function(yubinuki) {
+  var koma, komas, _i, _len, _ref1;
+  komas = [];
+  _ref1 = yubinuki.getKomaArray();
+  for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+    koma = _ref1[_i];
+    komas.push(packKoma(koma));
+  }
+  return {
+    komaNum: yubinuki.config.koma,
+    tobiNum: yubinuki.config.tobi,
+    resolution: yubinuki.config.resolution,
+    koma: komas
+  };
+};
+
+packKoma = function(koma) {
+  var ito, itos, _i, _len, _ref1;
+  itos = [];
+  _ref1 = koma.getItoArray();
+  for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+    ito = _ref1[_i];
+    itos.push(packIto(ito));
+  }
+  return {
+    offset: koma.offset,
+    type: koma.type,
+    komaKagari: koma.komaKagari,
+    ito: itos
+  };
+};
+
+packIto = function(ito) {
+  return {
+    color: ito.color,
+    round: ito.roundNum
+  };
+};
+
+unpack = function(json) {
+  var i, k, koma, types, yb, _i, _j, _len, _len1, _ref1, _ref2;
+  yb = new YubinukiVM(json.komaNum, json.tobiNum, json.resolution);
+  yb.startManualSet();
+  yb.clearKoma();
+  types = [SasiType.Nami, SasiType.Hiraki];
+  _ref1 = json.koma;
+  for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+    k = _ref1[_i];
+    koma = yb.addKoma(k.offset, types[k.type], k.komaKagari);
+    _ref2 = k.ito;
+    for (_j = 0, _len1 = _ref2.length; _j < _len1; _j++) {
+      i = _ref2[_j];
+      koma.addIto(i.color, i.round);
+    }
+  }
+  yb.endManualSet();
+  return yb;
+};
+
+module.exports.pack = pack;
+
+module.exports.unpack = unpack;
+
+
+
+},{"./viewmodel":4}],2:[function(require,module,exports){
+var ANIMATION_INTERVAL_MS, Formatter, ItoVM, KomaVM, RESIZE_WAIT, SasiType, Simulator, YubinukiSimulatorVM, YubinukiVM, canvas1, canvasContainer, queue, setCanvasSize, vm, _ref;
 
 Simulator = require('./simulator');
 
 _ref = require('./viewmodel'), ItoVM = _ref.ItoVM, KomaVM = _ref.KomaVM, YubinukiVM = _ref.YubinukiVM, SasiType = _ref.SasiType;
+
+Formatter = require('./formatter');
 
 ANIMATION_INTERVAL_MS = 500;
 
@@ -17,7 +89,7 @@ YubinukiSimulatorVM = (function() {
     this.executing = false;
     this.simulator = new Simulator(canvas, cc);
     this.simulator.canvasResized();
-    this.yubinuki = ko.observable(new YubinukiVM(8, 2, 30, false));
+    this.yubinuki = ko.observable(new YubinukiVM(8, 2, 30));
     this.stepSimulation = ko.observable(false);
     this.stepNum = ko.observable(10);
     this.stepMax = ko.computed(function() {
@@ -33,6 +105,10 @@ YubinukiSimulatorVM = (function() {
     this.animationProgress = ko.computed(function() {
       return Math.ceil(self.animationStep() / self.animationStepMax() * 100);
     });
+    this.dataToSave = ko.computed(function() {
+      return JSON.stringify(Formatter.pack(self.yubinuki()));
+    });
+    this.dataToLoad = ko.observable("a");
     yb = this.yubinuki();
     yb.startManualSet();
     yb.clearKoma();
@@ -105,6 +181,25 @@ YubinukiSimulatorVM = (function() {
     return this.yubinuki();
   };
 
+  YubinukiSimulatorVM.prototype.loadYubinuki = function() {
+    var e, input, json, yubinuki;
+    input = this.dataToLoad();
+    json = [];
+    try {
+      json = JSON.parse(input);
+    } catch (_error) {
+      e = _error;
+      console.log(e);
+      alert("読み込みに失敗しました。形式が正しくありません。");
+      return;
+    }
+    console.log(json);
+    yubinuki = Formatter.unpack(json);
+    this.yubinuki(yubinuki);
+    this.simulate();
+    return $('#dataTextLoad').modal('hide');
+  };
+
   return YubinukiSimulatorVM;
 
 })();
@@ -157,7 +252,7 @@ console.log("hoge");
 
 
 
-},{"./simulator":2,"./viewmodel":3}],2:[function(require,module,exports){
+},{"./formatter":1,"./simulator":3,"./viewmodel":4}],3:[function(require,module,exports){
 var CHECKER_MAX, DEFAULT_SIMULATOR_MARGIN_LEFT, DEFAULT_SIMULATOR_WIDTH, Direction, Ito, Koma, SCALE_LINE_COLOR, SCALE_TEXT_COLOR, SIDE_CUTOFF, SasiType, Simulator, SimulatorConfig, ValidatableModel, Yubinuki, _ref;
 
 _ref = require('./yubinuki'), ValidatableModel = _ref.ValidatableModel, Ito = _ref.Ito, Koma = _ref.Koma, Yubinuki = _ref.Yubinuki, Direction = _ref.Direction, SasiType = _ref.SasiType;
@@ -401,7 +496,7 @@ module.exports = Simulator;
 
 
 
-},{"./yubinuki":4}],3:[function(require,module,exports){
+},{"./yubinuki":5}],4:[function(require,module,exports){
 var DefaultIto, Direction, Ito, ItoVM, Koma, KomaVM, NumericCompution, SasiType, SasiTypeViewModel, ValidatableModel, Yubinuki, YubinukiVM, _ref,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -750,7 +845,7 @@ exports.DefaultIto = DefaultIto;
 
 
 
-},{"./yubinuki":4}],4:[function(require,module,exports){
+},{"./yubinuki":5}],5:[function(require,module,exports){
 var Direction, Ito, Koma, SasiType, ValidatableModel, Yubinuki,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -1093,4 +1188,4 @@ module.exports = {
 
 
 
-},{}]},{},[1]);
+},{}]},{},[2]);

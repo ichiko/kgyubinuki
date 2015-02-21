@@ -16,10 +16,12 @@
 
 </head>
 <body>
+<pre>
 <!-- [FC2 Analyzer] http://analyzer.fc2.com/  -->
 <script language="javascript" src="http://analyzer51.fc2.com/ana/processor.php?uid=2342625" type="text/javascript"></script>
 <noscript><div align="right"><img src="http://analyzer51.fc2.com/ana/icon.php?uid=2342625&ref=&href=&wid=0&hei=0&col=0" /></div></noscript>
 <!-- [FC2 Analyzer]  -->
+</pre>
 	<nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
 		<div class="container">
 			<div class="navbar-header">
@@ -118,6 +120,14 @@
 
 			<div class="form-group">
 				<button data-bind="click: cmdSimulate">シミュレート</button>
+				&nbsp;&nbsp;&nbsp;&nbsp;
+				<!-- Button trigger modal -->
+				<button type="button" id="btnTextSave" class="hidden-xs" data-toggle="modal" data-target="#dataTextSave">
+					設定をテキストで保存
+				</button>
+				<button type="button" id="btnTextLoad" class="hidden-xs" data-toggle="modal" data-target="#dataTextLoad">
+					設定をテキストから復元
+				</button>
 			</div>
 
 			<!-- ko with: yubinuki -->
@@ -201,6 +211,41 @@
 			</div>
 			<!-- /ko -->
 			<!-- /ko -->
+
+			<!-- Modal -->
+			<div class="modal fade" id="dataTextSave" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+				<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<h4 class="modal-title" id="myModalLabel">テキストエディタへコピー&amp;ペーストして、保存してください。</h4>
+					</div>
+					<div class="modal-body">
+						<p data-bind="text: dataToSave"></p>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">閉じる</button>
+					</div>
+				</div>
+				</div>
+			</div>
+			<div class="modal fade" id="dataTextLoad" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+				<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<h4 class="modal-title" id="myModalLabel">設定を復元するテキストをコピー&amp;ペーストしてください。</h4>
+					</div>
+					<div class="modal-body">
+						<textarea class="form-control" rows="5" data-bind="value: dataToLoad"></textarea>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">閉じる</button>
+						<button type="button" class="btn btn-primary" data-bind="click: loadYubinuki">復元する</button>
+					</div>
+				</div>
+				</div>
+			</div>
 
 			<h3 id="howto">使い方</h3>
 

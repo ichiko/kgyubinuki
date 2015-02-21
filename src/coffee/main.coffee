@@ -1,5 +1,6 @@
 Simulator = require './simulator'
 {ItoVM, KomaVM, YubinukiVM, SasiType} = require './viewmodel'
+Formatter = require './formatter'
 
 # ===============
 #  Application
@@ -19,7 +20,7 @@ class YubinukiSimulatorVM
 		@simulator = new Simulator(canvas, cc)
 		@simulator.canvasResized()
 
-		@yubinuki = ko.observable(new YubinukiVM(8, 2, 30, false))
+		@yubinuki = ko.observable(new YubinukiVM(8, 2, 30))
 		@stepSimulation = ko.observable(false)
 		@stepNum = ko.observable(10)
 		@stepMax = ko.computed( ->
@@ -35,6 +36,11 @@ class YubinukiSimulatorVM
 		@animationProgress = ko.computed( ->
 			Math.ceil(self.animationStep() / self.animationStepMax() * 100)
 		)
+
+		@dataToSave = ko.computed( ->
+			JSON.stringify(Formatter.pack(self.yubinuki()))
+		)
+		@dataToLoad = ko.observable("a")
 
 		# TEST
 		yb = @yubinuki()
@@ -96,13 +102,22 @@ class YubinukiSimulatorVM
 		cc.restore()
 
 	getYubinuki: ->
-#		yubinuki = new YubinukiVM(8, 2, 30, false)
-#		koma = yubinuki.addKoma(0)
-#		koma.addIto('blue', 1)
-#		koma = yubinuki.addKoma(0, false)
-#		koma.addIto('red', 1)
-#		return yubinuki
 		@yubinuki()
+
+	loadYubinuki: ->
+		input = @dataToLoad()
+		json = []
+		try
+			json = JSON.parse(input)
+		catch e
+			console.log e
+			alert("読み込みに失敗しました。形式が正しくありません。")
+			return
+		console.log json
+		yubinuki = Formatter.unpack(json)
+		@yubinuki(yubinuki)
+		@simulate()
+		$('#dataTextLoad').modal('hide')
 
 vm = new YubinukiSimulatorVM()
 
