@@ -104,6 +104,8 @@ class YubinukiSimulatorVM
 	getYubinuki: ->
 		@yubinuki()
 
+	saveYubinuki: ->
+
 	loadYubinuki: ->
 		input = @dataToLoad()
 		json = []
@@ -118,6 +120,12 @@ class YubinukiSimulatorVM
 		@yubinuki(yubinuki)
 		@simulate()
 		$('#dataTextLoad').modal('hide')
+
+	closeSave: ->
+		$('#saveInformation').collapse('toggle')
+
+	closeLoad: ->
+		$('#loadInformation').collapse('toggle')
 
 vm = new YubinukiSimulatorVM()
 

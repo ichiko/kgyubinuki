@@ -181,6 +181,8 @@ YubinukiSimulatorVM = (function() {
     return this.yubinuki();
   };
 
+  YubinukiSimulatorVM.prototype.saveYubinuki = function() {};
+
   YubinukiSimulatorVM.prototype.loadYubinuki = function() {
     var e, input, json, yubinuki;
     input = this.dataToLoad();
@@ -198,6 +200,14 @@ YubinukiSimulatorVM = (function() {
     this.yubinuki(yubinuki);
     this.simulate();
     return $('#dataTextLoad').modal('hide');
+  };
+
+  YubinukiSimulatorVM.prototype.closeSave = function() {
+    return $('#saveInformation').collapse('toggle');
+  };
+
+  YubinukiSimulatorVM.prototype.closeLoad = function() {
+    return $('#loadInformation').collapse('toggle');
   };
 
   return YubinukiSimulatorVM;

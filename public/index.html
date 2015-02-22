@@ -122,13 +122,54 @@
 			<div class="form-group">
 				<button data-bind="click: cmdSimulate">シミュレート</button>
 				&nbsp;&nbsp;&nbsp;&nbsp;
-				<!-- Button trigger modal -->
-				<button type="button" id="btnTextSave" class="hidden-xs" data-toggle="modal" data-target="#dataTextSave">
-					設定をテキストで保存
+
+				<button type="button" id="btnSave" class="hidden-xs" data-toggle="collapse" data-target="#saveInformation">
+					保存...
 				</button>
-				<button type="button" id="btnTextLoad" class="hidden-xs" data-toggle="modal" data-target="#dataTextLoad">
-					設定をテキストから復元
+				<button type="button" id="btnSave" class="hidden-xs" data-toggle="collapse" data-target="#loadInformation">
+					読込み...
 				</button>
+			</div>
+
+			<div class="collapse" id="saveInformation">
+				<div class="well form-inline">
+					<button type="button" class="close" data-dismiss="alert" aria-label="Close" data-bind="click: closeSave">
+						<span aria-hidden="true">&times;</span>
+					</button>
+					<p>ブラウザに保存します。</p>
+					<div class="form-group">
+						<label class="control-label">data No.</label>
+						<select class="form-control">
+							<option value="save01">#01</option>
+							<option value="save02">#02</option>
+							<option value="save03">#03</option>
+							<option value="save04">#04</option>
+						</select>
+					</div>
+					<div class="form-group">
+						<label class="sr-only">コメント</label>
+						<input type="text" class="form-control" placeholder="コメント">
+					</div>
+					<button class="btn btn-primary">保存する</button>
+				</div>
+			</div>
+			<div class="collapse" id="loadInformation">
+				<div class="well form-inline">
+					<button type="button" class="close" data-dismiss="alert" aria-label="Close" data-bind="click: closeLoad">
+						<span aria-hidden="true">&times;</span>
+					</button>
+					<p>ブラウザに保存したデータを読み込みます。</p>
+					<div class="form-group">
+						<label class="control-label">data No. &amp; comment</label>
+						<select class="form-control">
+							<option value="save01">#01</option>
+							<option value="save02">#02</option>
+							<option value="save03">#03</option>
+							<option value="save04">#04</option>
+						</select>
+					</div>
+					<button class="btn btn-primary">読み込む</button>
+				</div>
 			</div>
 
 			<!-- ko with: yubinuki -->
@@ -212,41 +253,6 @@
 			</div>
 			<!-- /ko -->
 			<!-- /ko -->
-
-			<!-- Modal -->
-			<div class="modal fade" id="dataTextSave" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-				<div class="modal-dialog">
-				<div class="modal-content">
-					<div class="modal-header">
-						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-						<h4 class="modal-title" id="myModalLabel">テキストエディタへコピー&amp;ペーストして、保存してください。</h4>
-					</div>
-					<div class="modal-body">
-						<p data-bind="text: dataToSave"></p>
-					</div>
-					<div class="modal-footer">
-						<button type="button" class="btn btn-default" data-dismiss="modal">閉じる</button>
-					</div>
-				</div>
-				</div>
-			</div>
-			<div class="modal fade" id="dataTextLoad" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-				<div class="modal-dialog">
-				<div class="modal-content">
-					<div class="modal-header">
-						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-						<h4 class="modal-title" id="myModalLabel">設定を復元するテキストをコピー&amp;ペーストしてください。</h4>
-					</div>
-					<div class="modal-body">
-						<textarea class="form-control" rows="5" data-bind="value: dataToLoad"></textarea>
-					</div>
-					<div class="modal-footer">
-						<button type="button" class="btn btn-default" data-dismiss="modal">閉じる</button>
-						<button type="button" class="btn btn-primary" data-bind="click: loadYubinuki">復元する</button>
-					</div>
-				</div>
-				</div>
-			</div>
 
 			<h3 id="howto">使い方</h3>
 
