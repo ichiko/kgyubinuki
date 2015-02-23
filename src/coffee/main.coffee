@@ -37,10 +37,8 @@ class YubinukiSimulatorVM
 			Math.ceil(self.animationStep() / self.animationStepMax() * 100)
 		)
 
-		@dataToSave = ko.computed( ->
-			JSON.stringify(Formatter.pack(self.yubinuki()))
-		)
-		@dataToLoad = ko.observable("")
+		@saveSlotNo = ko.observable()
+		@saveComment = ko.observable("")
 
 		# TEST
 		yb = @yubinuki()
@@ -103,6 +101,36 @@ class YubinukiSimulatorVM
 
 	getYubinuki: ->
 		@yubinuki()
+
+	openSave: ->
+		savePanel = $('#saveInformation')
+		loadPanel = $('#loadInformation')
+		if savePanel.hasClass('in')
+			savePanel.collapse('hide')
+			return
+		if loadPanel.hasClass('in')
+			loadPanel.collapse('hide')
+			loadPanel.on('hidden.bs.collapse', ->
+				savePanel.collapse('show')
+				loadPanel.off('hidden.bs.collapse')
+			)
+		else
+			savePanel.collapse('show')
+
+	openLoad: ->
+		savePanel = $('#saveInformation')
+		loadPanel = $('#loadInformation')
+		if loadPanel.hasClass('in')
+			loadPanel.collapse('hide')
+			return
+		if savePanel.hasClass('in')
+			savePanel.collapse('hide')
+			savePanel.on('hidden.bs.collapse', ->
+				loadPanel.collapse('show')
+				savePanel.off('hidden.bs.collapse')
+			)
+		else
+			loadPanel.collapse('show')
 
 	saveYubinuki: ->
 

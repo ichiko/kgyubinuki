@@ -105,10 +105,8 @@ YubinukiSimulatorVM = (function() {
     this.animationProgress = ko.computed(function() {
       return Math.ceil(self.animationStep() / self.animationStepMax() * 100);
     });
-    this.dataToSave = ko.computed(function() {
-      return JSON.stringify(Formatter.pack(self.yubinuki()));
-    });
-    this.dataToLoad = ko.observable("");
+    this.saveSlotNo = ko.observable();
+    this.saveComment = ko.observable("");
     yb = this.yubinuki();
     yb.startManualSet();
     yb.clearKoma();
@@ -179,6 +177,44 @@ YubinukiSimulatorVM = (function() {
 
   YubinukiSimulatorVM.prototype.getYubinuki = function() {
     return this.yubinuki();
+  };
+
+  YubinukiSimulatorVM.prototype.openSave = function() {
+    var loadPanel, savePanel;
+    savePanel = $('#saveInformation');
+    loadPanel = $('#loadInformation');
+    if (savePanel.hasClass('in')) {
+      savePanel.collapse('hide');
+      return;
+    }
+    if (loadPanel.hasClass('in')) {
+      loadPanel.collapse('hide');
+      return loadPanel.on('hidden.bs.collapse', function() {
+        savePanel.collapse('show');
+        return loadPanel.off('hidden.bs.collapse');
+      });
+    } else {
+      return savePanel.collapse('show');
+    }
+  };
+
+  YubinukiSimulatorVM.prototype.openLoad = function() {
+    var loadPanel, savePanel;
+    savePanel = $('#saveInformation');
+    loadPanel = $('#loadInformation');
+    if (loadPanel.hasClass('in')) {
+      loadPanel.collapse('hide');
+      return;
+    }
+    if (savePanel.hasClass('in')) {
+      savePanel.collapse('hide');
+      return savePanel.on('hidden.bs.collapse', function() {
+        loadPanel.collapse('show');
+        return savePanel.off('hidden.bs.collapse');
+      });
+    } else {
+      return loadPanel.collapse('show');
+    }
   };
 
   YubinukiSimulatorVM.prototype.saveYubinuki = function() {};
