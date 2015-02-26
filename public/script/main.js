@@ -68,14 +68,16 @@ module.exports.unpack = unpack;
 
 
 
-},{"./viewmodel":4}],2:[function(require,module,exports){
-var ANIMATION_INTERVAL_MS, Formatter, ItoVM, KomaVM, RESIZE_WAIT, SasiType, Simulator, YubinukiSimulatorVM, YubinukiVM, canvas1, canvasContainer, queue, setCanvasSize, vm, _ref;
+},{"./viewmodel":5}],2:[function(require,module,exports){
+var ANIMATION_INTERVAL_MS, Formatter, ItoVM, KomaVM, RESIZE_WAIT, SasiType, Simulator, YubinukiSimulatorVM, YubinukiStorage, YubinukiVM, canvas1, canvasContainer, queue, setCanvasSize, vm, _ref;
 
 Simulator = require('./simulator');
 
 _ref = require('./viewmodel'), ItoVM = _ref.ItoVM, KomaVM = _ref.KomaVM, YubinukiVM = _ref.YubinukiVM, SasiType = _ref.SasiType;
 
 Formatter = require('./formatter');
+
+YubinukiStorage = require('./storage');
 
 ANIMATION_INTERVAL_MS = 500;
 
@@ -89,6 +91,9 @@ YubinukiSimulatorVM = (function() {
     this.executing = false;
     this.simulator = new Simulator(canvas, cc);
     this.simulator.canvasResized();
+    this.storage = ko.observable(new YubinukiStorage());
+    this.storage().loadAll();
+    this.enableStorage = store.enabled;
     this.yubinuki = ko.observable(new YubinukiVM(8, 2, 30));
     this.stepSimulation = ko.observable(false);
     this.stepNum = ko.observable(10);
@@ -96,7 +101,6 @@ YubinukiSimulatorVM = (function() {
       var max, yubinuki;
       yubinuki = self.yubinuki();
       max = yubinuki.fmTobi() * yubinuki.fmResolution();
-      console.log("stepMax", max);
       return max;
     }, this);
     this.showAnimation = ko.observable(false);
@@ -105,8 +109,24 @@ YubinukiSimulatorVM = (function() {
     this.animationProgress = ko.computed(function() {
       return Math.ceil(self.animationStep() / self.animationStepMax() * 100);
     });
-    this.saveSlotNo = ko.observable();
+    this.selectedStorageId = ko.observable("store01");
     this.saveComment = ko.observable("");
+    this.selectedStorage = ko.computed({
+      read: function() {
+        var id, obj;
+        id = self.selectedStorageId();
+        obj = self.storage().load(id);
+        return obj;
+      },
+      write: function(obj) {
+        if (obj) {
+          self.selectedStorageId(obj.key);
+          return self.saveComment(obj.comment);
+        }
+      },
+      owner: self
+    });
+    this.saveComment(this.storage().load(this.selectedStorageId()).comment);
     yb = this.yubinuki();
     yb.startManualSet();
     yb.clearKoma();
@@ -181,6 +201,10 @@ YubinukiSimulatorVM = (function() {
 
   YubinukiSimulatorVM.prototype.openSave = function() {
     var loadPanel, savePanel;
+    if (!this.getYubinuki().isValid()) {
+      alert("保存できません。入力エラーがあります。");
+      return;
+    }
     savePanel = $('#saveInformation');
     loadPanel = $('#loadInformation');
     if (savePanel.hasClass('in')) {
@@ -217,25 +241,29 @@ YubinukiSimulatorVM = (function() {
     }
   };
 
-  YubinukiSimulatorVM.prototype.saveYubinuki = function() {};
+  YubinukiSimulatorVM.prototype.saveYubinuki = function() {
+    var comment, key;
+    key = this.selectedStorageId();
+    comment = this.saveComment();
+    this.storage().save(key, comment, Formatter.pack(this.getYubinuki()));
+    this.selectedStorage(this.storage().load(key));
+    alert("data No." + key + "に保存しました。");
+    return $('#saveInformation').collapse('hide');
+  };
 
   YubinukiSimulatorVM.prototype.loadYubinuki = function() {
-    var e, input, json, yubinuki;
-    input = this.dataToLoad();
-    json = [];
-    try {
-      json = JSON.parse(input);
-    } catch (_error) {
-      e = _error;
-      console.log(e);
-      alert("読み込みに失敗しました。形式が正しくありません。");
-      return;
+    var data, key, yubinuki;
+    key = this.selectedStorageId();
+    data = this.storage().load(key);
+    if (data) {
+      yubinuki = Formatter.unpack(data.data);
+      this.yubinuki(yubinuki);
+      this.simulate();
+      alert("data No." + key + "から読み込みました。");
+      return $('#loadInformation').collapse('hide');
+    } else {
+      return alert("指定の場所にはデータが存在しませんでした。");
     }
-    console.log(json);
-    yubinuki = Formatter.unpack(json);
-    this.yubinuki(yubinuki);
-    this.simulate();
-    return $('#dataTextLoad').modal('hide');
   };
 
   YubinukiSimulatorVM.prototype.closeSave = function() {
@@ -298,7 +326,7 @@ console.log("hoge");
 
 
 
-},{"./formatter":1,"./simulator":3,"./viewmodel":4}],3:[function(require,module,exports){
+},{"./formatter":1,"./simulator":3,"./storage":4,"./viewmodel":5}],3:[function(require,module,exports){
 var CHECKER_MAX, DEFAULT_SIMULATOR_MARGIN_LEFT, DEFAULT_SIMULATOR_WIDTH, Direction, Ito, Koma, SCALE_LINE_COLOR, SCALE_TEXT_COLOR, SIDE_CUTOFF, SasiType, Simulator, SimulatorConfig, ValidatableModel, Yubinuki, _ref;
 
 _ref = require('./yubinuki'), ValidatableModel = _ref.ValidatableModel, Ito = _ref.Ito, Koma = _ref.Koma, Yubinuki = _ref.Yubinuki, Direction = _ref.Direction, SasiType = _ref.SasiType;
@@ -542,7 +570,71 @@ module.exports = Simulator;
 
 
 
-},{"./yubinuki":5}],4:[function(require,module,exports){
+},{"./yubinuki":6}],4:[function(require,module,exports){
+var PareparedKey, YubinukiStorage;
+
+PareparedKey = ['store01', 'store02', 'store03', 'store04', 'store05'];
+
+YubinukiStorage = (function() {
+  function YubinukiStorage() {
+    this.dataArray = ko.observableArray();
+    this.dataMap = new Array();
+  }
+
+  YubinukiStorage.prototype.loadAll = function() {
+    var comment, data, key, label, value, yubinuki, _i, _len, _results;
+    if (!store.enabled) {
+      return;
+    }
+    this.dataArray.removeAll();
+    _results = [];
+    for (_i = 0, _len = PareparedKey.length; _i < _len; _i++) {
+      key = PareparedKey[_i];
+      value = store.get(key);
+      label = key + " - (NO DATA)";
+      comment = "";
+      yubinuki = null;
+      if (value) {
+        label = key + " - " + value.comment;
+        comment = value.comment;
+        yubinuki = value.data;
+      }
+      data = {
+        key: key,
+        label: label,
+        comment: comment,
+        data: yubinuki
+      };
+      this.dataArray.push(data);
+      _results.push(this.dataMap[key] = data);
+    }
+    return _results;
+  };
+
+  YubinukiStorage.prototype.load = function(key) {
+    return this.dataMap[key];
+  };
+
+  YubinukiStorage.prototype.save = function(key, comment, data) {
+    if (!store.enabled) {
+      return;
+    }
+    store.set(key, {
+      comment: comment,
+      data: data
+    });
+    return this.loadAll();
+  };
+
+  return YubinukiStorage;
+
+})();
+
+module.exports = YubinukiStorage;
+
+
+
+},{}],5:[function(require,module,exports){
 var DefaultIto, Direction, Ito, ItoVM, Koma, KomaVM, NumericCompution, SasiType, SasiTypeViewModel, ValidatableModel, Yubinuki, YubinukiVM, _ref,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -891,7 +983,7 @@ exports.DefaultIto = DefaultIto;
 
 
 
-},{"./yubinuki":5}],5:[function(require,module,exports){
+},{"./yubinuki":6}],6:[function(require,module,exports){
 var Direction, Ito, Koma, SasiType, ValidatableModel, Yubinuki,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };

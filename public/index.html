@@ -13,6 +13,7 @@
 	<script type="text/javascript" src="lib/bootstrap/bootstrap.min.js"></script>
 	<script type="text/javascript" src="lib/knockoutjs/knockout.js"></script>
 	<script type="text/javascript" src="lib/knockout-jqueryui/knockout-jqueryui.min.js"></script>
+	<script type="text/javascript" src="lib/store.js/store.js"></script>
 
 </head>
 <body>
@@ -123,10 +124,10 @@
 				<button data-bind="click: cmdSimulate">シミュレート</button>
 				&nbsp;&nbsp;&nbsp;&nbsp;
 
-				<button type="button" id="btnSave" class="hidden-xs" data-bind="click: openSave">
+				<button type="button" id="btnSave" class="hidden-xs" data-bind="click: openSave, visible: enableStorage">
 					保存...
 				</button>
-				<button type="button" id="btnSave" class="hidden-xs" data-bind="click: openLoad">
+				<button type="button" id="btnSave" class="hidden-xs" data-bind="click: openLoad, visible: enableStorage">
 					読込み...
 				</button>
 			</div>
@@ -139,18 +140,14 @@
 					<p>ブラウザに保存します。</p>
 					<div class="form-group">
 						<label class="control-label">data No.</label>
-						<select class="form-control">
-							<option value="save01">#01</option>
-							<option value="save02">#02</option>
-							<option value="save03">#03</option>
-							<option value="save04">#04</option>
+						<select class="form-control" data-bind="options: storage().dataArray, value: selectedStorage, optionsText: 'label'">
 						</select>
 					</div>
 					<div class="form-group">
 						<label class="sr-only">コメント</label>
-						<input type="text" class="form-control" placeholder="コメント">
+						<input type="text" class="form-control" placeholder="コメント" data-bind="value: saveComment">
 					</div>
-					<button class="btn btn-primary">保存する</button>
+					<button class="btn btn-primary" data-bind="click: saveYubinuki">保存する</button>
 				</div>
 			</div>
 			<div class="collapse" id="loadInformation">
@@ -161,14 +158,10 @@
 					<p>ブラウザに保存したデータを読み込みます。</p>
 					<div class="form-group">
 						<label class="control-label">data No. &amp; comment</label>
-						<select class="form-control">
-							<option value="save01">#01</option>
-							<option value="save02">#02</option>
-							<option value="save03">#03</option>
-							<option value="save04">#04</option>
+						<select class="form-control" data-bind="options: storage().dataArray, value: selectedStorage, optionsText: 'label'">
 						</select>
 					</div>
-					<button class="btn btn-primary">読み込む</button>
+					<button class="btn btn-primary" data-bind="click: loadYubinuki">読み込む</button>
 				</div>
 			</div>
 

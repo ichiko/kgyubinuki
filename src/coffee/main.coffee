@@ -1,6 +1,7 @@
 Simulator = require './simulator'
 {ItoVM, KomaVM, YubinukiVM, SasiType} = require './viewmodel'
 Formatter = require './formatter'
+YubinukiStorage = require './storage'
 
 # ===============
 #  Application
@@ -19,15 +20,16 @@ class YubinukiSimulatorVM
 		@executing = false
 		@simulator = new Simulator(canvas, cc)
 		@simulator.canvasResized()
+		@storage = ko.observable(new YubinukiStorage())
+		@storage().loadAll()
 
+		@enableStorage = store.enabled
 		@yubinuki = ko.observable(new YubinukiVM(8, 2, 30))
 		@stepSimulation = ko.observable(false)
 		@stepNum = ko.observable(10)
 		@stepMax = ko.computed( ->
 			yubinuki = self.yubinuki()
-			# TODO 重ね刺しの場合
 			max = yubinuki.fmTobi() * yubinuki.fmResolution()
-			console.log "stepMax", max
 			return max
 		, @)
 		@showAnimation = ko.observable(false)
@@ -37,8 +39,20 @@ class YubinukiSimulatorVM
 			Math.ceil(self.animationStep() / self.animationStepMax() * 100)
 		)
 
-		@saveSlotNo = ko.observable()
+		@selectedStorageId = ko.observable("store01")
 		@saveComment = ko.observable("")
+		@selectedStorage = ko.computed({
+			read: ->
+				id = self.selectedStorageId()
+				obj = self.storage().load(id)
+				return obj
+			write: (obj) ->
+				if obj
+					self.selectedStorageId(obj.key)
+					self.saveComment(obj.comment)
+			owner: self
+		})
+		@saveComment(@storage().load(@selectedStorageId()).comment)
 
 		# TEST
 		yb = @yubinuki()
@@ -103,6 +117,10 @@ class YubinukiSimulatorVM
 		@yubinuki()
 
 	openSave: ->
+		if !@getYubinuki().isValid()
+			alert("保存できません。入力エラーがあります。")
+			return
+
 		savePanel = $('#saveInformation')
 		loadPanel = $('#loadInformation')
 		if savePanel.hasClass('in')
@@ -133,21 +151,24 @@ class YubinukiSimulatorVM
 			loadPanel.collapse('show')
 
 	saveYubinuki: ->
+		key = @selectedStorageId()
+		comment = @saveComment()
+		@storage().save key, comment, Formatter.pack(@getYubinuki())
+		@selectedStorage(@storage().load(key))
+		alert("data No." + key + "に保存しました。")
+		$('#saveInformation').collapse('hide')
 
 	loadYubinuki: ->
-		input = @dataToLoad()
-		json = []
-		try
-			json = JSON.parse(input)
-		catch e
-			console.log e
-			alert("読み込みに失敗しました。形式が正しくありません。")
-			return
-		console.log json
-		yubinuki = Formatter.unpack(json)
-		@yubinuki(yubinuki)
-		@simulate()
-		$('#dataTextLoad').modal('hide')
+		key = @selectedStorageId()
+		data = @storage().load(key)
+		if data
+			yubinuki = Formatter.unpack(data.data)
+			@yubinuki(yubinuki)
+			@simulate()
+			alert("data No." + key + "から読み込みました。")
+			$('#loadInformation').collapse('hide')
+		else
+			alert("指定の場所にはデータが存在しませんでした。")
 
 	closeSave: ->
 		$('#saveInformation').collapse('toggle')
