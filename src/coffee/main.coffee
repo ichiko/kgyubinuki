@@ -117,7 +117,7 @@ class YubinukiSimulatorVM
 		@yubinuki()
 
 	openSave: ->
-		if !@getYubinuki().isValid()
+		if !@getYubinuki().fmValid()
 			alert("保存できません。入力エラーがあります。")
 			return
 
@@ -151,6 +151,10 @@ class YubinukiSimulatorVM
 			loadPanel.collapse('show')
 
 	saveYubinuki: ->
+		if !@getYubinuki().fmValid()
+			alert("保存できません。入力エラーがあります。")
+			return
+
 		key = @selectedStorageId()
 		comment = @saveComment()
 		@storage().save key, comment, Formatter.pack(@getYubinuki())

@@ -201,7 +201,7 @@ YubinukiSimulatorVM = (function() {
 
   YubinukiSimulatorVM.prototype.openSave = function() {
     var loadPanel, savePanel;
-    if (!this.getYubinuki().isValid()) {
+    if (!this.getYubinuki().fmValid()) {
       alert("保存できません。入力エラーがあります。");
       return;
     }
@@ -243,6 +243,10 @@ YubinukiSimulatorVM = (function() {
 
   YubinukiSimulatorVM.prototype.saveYubinuki = function() {
     var comment, key;
+    if (!this.getYubinuki().fmValid()) {
+      alert("保存できません。入力エラーがあります。");
+      return;
+    }
     key = this.selectedStorageId();
     comment = this.saveComment();
     this.storage().save(key, comment, Formatter.pack(this.getYubinuki()));
@@ -729,6 +733,16 @@ ItoVM = (function(_super) {
     }));
   }
 
+  ItoVM.prototype.fmValid = function() {
+    if (!this.fmColorValid()) {
+      return false;
+    }
+    if (!this.fmRoundValid()) {
+      return false;
+    }
+    return true;
+  };
+
   return ItoVM;
 
 })(Ito);
@@ -817,6 +831,21 @@ KomaVM = (function(_super) {
     ito = new ItoVM(color, roundNum);
     this.itoArray.push(ito);
     return ito;
+  };
+
+  KomaVM.prototype.fmValid = function() {
+    var ito, _i, _len, _ref1;
+    if (!this.fmOffsetValid()) {
+      return false;
+    }
+    _ref1 = this.getItoArray();
+    for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+      ito = _ref1[_i];
+      if (!ito.fmValid()) {
+        return false;
+      }
+    }
+    return true;
   };
 
   return KomaVM;
@@ -965,6 +994,24 @@ YubinukiVM = (function(_super) {
       remove = komaLen - tobi;
       return this.komaArray.splice(komaLen - remove, remove);
     }
+  };
+
+  YubinukiVM.prototype.fmValid = function() {
+    var koma, _i, _len, _ref1;
+    if (!this.fmKomaValid()) {
+      return false;
+    }
+    if (!this.fmTobiValid()) {
+      return false;
+    }
+    _ref1 = this.getKomaArray();
+    for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+      koma = _ref1[_i];
+      if (!koma.fmValid()) {
+        return false;
+      }
+    }
+    return true;
   };
 
   return YubinukiVM;

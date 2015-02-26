@@ -69,6 +69,13 @@ class ItoVM extends Ito
 		owner: @
 		}))
 
+	fmValid: ->
+		if !@fmColorValid()
+			return false
+		if !@fmRoundValid()
+			return false
+		return true
+
 class KomaVM extends Koma
 	constructor: (offset, type, komaKagari, config, setDefault = true) ->
 		super offset, type, komaKagari, config
@@ -139,6 +146,14 @@ class KomaVM extends Koma
 		ito = new ItoVM(color, roundNum)
 		@itoArray.push ito
 		return ito
+
+	fmValid: ->
+		if !@fmOffsetValid()
+			return false
+		for ito in @getItoArray()
+			if !ito.fmValid()
+				return false
+		return true
 
 class YubinukiVM extends Yubinuki
 	constructor: (komaNum, tobiNum, resolution) ->
@@ -257,6 +272,16 @@ class YubinukiVM extends Yubinuki
 		else if komaLen > tobi
 			remove = komaLen - tobi
 			@komaArray.splice(komaLen - remove, remove)
+
+	fmValid: ->
+		if !@fmKomaValid()
+			return false
+		if !@fmTobiValid()
+			return false
+		for koma in @getKomaArray()
+			if !koma.fmValid()
+				return false
+		return true
 
 exports.ItoVM = ItoVM
 exports.KomaVM = KomaVM
