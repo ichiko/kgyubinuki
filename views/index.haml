@@ -1,0 +1,234 @@
+!!! 5
+%html
+  %head
+    %meta{ :charset=>'utf-8' }
+    %meta{ :name=>"viewport", :content=>"width=device-width, initial-scale=1.0" }
+    %title
+      加賀ゆびぬき　刺し模様シミュレータ
+      = ' | ' + @site_name
+
+    %link{ :rel=>'stylesheet', :type=>'text/css', :href=>'lib/bootstrap/bootstrap.min.css' }
+    %link{ :rel=>'stylesheet', :type=>'text/css', :href=>'lib/jquery-ui/themes/base/all.css' }
+    %link{ :rel=>'stylesheet', :type=>'text/css', :href=>'css/ybnk.css' }
+    
+    %script{ :src=>"lib/jquery/jquery.js" }
+    %script{ :src=>"lib/jquery-ui/jquery-ui.min.js" }
+    %script{ :src=>"lib/bootstrap/bootstrap.min.js" }
+    %script{ :src=>"lib/knockoutjs/knockout.js" }
+    %script{ :src=>"lib/knockout-jqueryui/knockout-jqueryui.min.js" }
+    %script{ :src=>"lib/store.js/store.js" }
+
+  %body
+    = haml :"shared/access-logger"
+    %nav.navbar.navbar-inverse.navbar-fixed-top{ :role=>"navigation" }
+      .container
+        .navbar-header
+          %button.navbar-toggle{ :type=>'button', 'data-toggle'=>'collapse', 'data-target'=>'#minazuki-navbar'}
+            %span.sr-only
+              Toggle navigation
+            %span.icon-bar
+            %span.icon-bar
+            %span.icon-bar
+          %a.navbar-brand{ :href=>'../index.html' }
+            = @site_name
+        .collapse.navbar-collapse#minazuki-navbar
+          %ul.nav.navbar-nav
+            %li.active
+              %a{ :href=>'#' }
+                加賀ゆびぬきシミュレータ
+            %li
+              %a{ :href=>'#simulator' }
+                シミュレータ
+            %li
+              %a{ :href=>'#howto' }
+                使い方
+            %li
+              %a{ :href=>'#qa' }
+                Q&amp;A
+
+    .container
+      %div.page-header
+        %h1
+          加賀ゆびぬき　刺し模様シミュレータ <small>v0.71(20150226)</small>
+
+      %p.lead
+        加賀ゆびぬきの刺し模様をシミュレートします。
+
+        %ul
+          %li 手順どおりに、リストにしていけばだいたい再現します。
+          %li 並み刺し、開き刺しに対応しています。
+          %li 重ね刺しに対応しています。一度に1コマ分を一気に刺す場合は、「まとめ刺し」にチェックを入れてください。
+          %li 各コマで使用する糸の色を指定できます。段数がコマ内の針数に不足するときは、色の指定をくりかえすものとして動きます。
+          %li <s>設定をテキストで保存できるようになりました。(v0.7 NEW)</s>
+          %li 設定をブラウザに保存できるようになりました。PC版のみ。(v0.71 NEW)
+
+      %p
+        できないこと。
+        %ul
+          %li くぐり刺しの再現。
+
+      %p
+        バグ報告や要望は、Twitter <a href="https://twitter.com/ichiko_revjune">@ichiko_revjune</a> まで。
+
+      %p
+        <a href="https://twitter.com/intent/tweet?screen_name=ichiko_revjune" class="twitter-mention-button" data-related="ichiko_revjune">Tweet to @ichiko_revjune</a> <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>
+
+      %h3#simulator.page-header シミュレータ
+
+      %div#canvasContainer{ :height=>'130' }
+        %canvas#canvas{ :height=>'130' }
+
+      .ybnk-config{ "data-bind"=>'with: yubinuki' }
+        .col-xs-4.col-sm-2
+          <label for="inputKomaNum" class="control-label">コマ</label>
+          <input id="inputKomaNum" class="hidden-xs number" data-bind="value: fmKomaNum"/>
+          <select id="inputKomaNum" class="visible-xs" data-bind="options: availableKomaNums, value: fmKomaNum"></select>
+          <p class="invalid" data-bind="visible: !fmKomaValid()">数値を入力してください。
+
+        .col-xs-4.col-sm-2
+          <label for="inputTobiNum" class="control-label">トビ</label>
+          <input id="inputTobiNum" class="hidden-xs number" data-bind="value: fmTobiNum" />
+          <select id="inputTobiNum" class="visible-xs" data-bind="options: availableTobiNums, value: fmTobiNum"></select>
+          <p class="invalid" data-bind="visible: !fmTobiValid()">数値を入力してください。</p>
+
+        .col-xs-4.col-sm-2
+          <label for="selectResolution" class="control-label">コマ内の針数</label>
+          <select id="selectResolution" data-bind="options: availableResolutions, value: fmResolutionNum"></select>
+
+        .clear
+
+      .simulator-option
+        .form-group{ "data-bind"=>'with: yubinuki' }
+          <input type="checkbox" data-bind="checked: fmUseOneKoma, click: clickUseOneKoma"> 刺し位置をずらさずに、ひとつだけ使用する(矢鱈縞)</input>
+
+        .form-group
+          <input type="checkbox" data-bind="checked: stepSimulation"> 途中までシミュレート</input>
+          <span data-bind="text: stepNum"></span>段
+          <div id="slider" class="slider" data-bind="slider: { value: stepNum, realtime: true, min: 1, max: stepMax }"></div>
+
+        .form-group
+          <input type="checkbox" data-bind="checked: showAnimation"> アニメーション表示する</input>
+          .progress
+            .progress-bar.progress-bar-success{ :role=>'progressbar', "aria-valuenow"=>'40', "aria-valuemin"=>'0', "aria-valuemax"=>'100', "data-bind"=>"style: { width: animationProgress() + '%' }" }
+              <span data-bind="text: animationStep() + ' / ' + animationStepMax() + ' (' + animationProgress() + '%)'"></span>
+
+      .form-group
+        <button data-bind="click: cmdSimulate">シミュレート</button>
+        &nbsp;&nbsp;&nbsp;&nbsp;
+
+        <button type="button" id="btnSave" class="hidden-xs" data-bind="click: openSave, visible: enableStorage">
+        保存...
+        </button>
+        <button type="button" id="btnSave" class="hidden-xs" data-bind="click: openLoad, visible: enableStorage">
+        読込み...
+        </button>
+
+      .collapse#saveInformation
+        .well.form-inline
+          %button.close{ :type=>"button", "data-dismiss"=>"alert", "aria-label"=>"Close", "data-bind"=>"click: closeSave" }
+            <span aria-hidden="true">&times;</span>
+
+          <p>ブラウザに保存します。</p>
+          .form-group
+            <label class="control-label">data No.</label>
+            <select class="form-control" data-bind="options: storage().dataArray, value: selectedStorage, optionsText: 'label'">
+            </select>
+
+          .form-group
+            <label class="sr-only">コメント</label>
+            <input type="text" class="form-control" placeholder="コメント" data-bind="value: saveComment">
+
+          <button class="btn btn-primary" data-bind="click: saveYubinuki">保存する</button>
+
+      .collapse#loadInformation
+        .well.form-inline
+          %button.close{ :type=>"button", "data-dismiss"=>"alert", "aria-label"=>"Close", "data-bind"=>"click: closeLoad" }
+            <span aria-hidden="true">&times;</span>
+
+          <p>ブラウザに保存したデータを読み込みます。</p>
+          .form-group
+            <label class="control-label">data No. &amp; comment</label>
+            <select class="form-control" data-bind="options: storage().dataArray, value: selectedStorage, optionsText: 'label'">
+            </select>
+
+          <button class="btn btn-primary" data-bind="click: loadYubinuki">読み込む</button>
+
+      <!-- ko with: yubinuki -->
+      <!-- ko foreach: { data: komaArray, as: 'koma' } -->
+      .panel.panel-default.koma-config
+        .panel-heading
+          <span data-bind="text: 'コマ (' + ($index() + 1) + ')'"></span>
+          <button class="koma-command" data-bind="click: koma.addNewIto">色を追加</button>
+          <div class="clear"></div>
+
+        .panel-body
+          .row
+            .col-sm-6.col-md-4
+              .form-group.row
+                <label for="inputOffset" class="col-xs-4 col-md-4 control-label">刺し位置</label>
+                .col-xs-8.col-md-8
+                  <input class="hidden-xs form-control number" id="inputOffset" data-bind="value: koma.fmOffset"/>
+                  <select id="inputOffset" class="visible-xs form-control" data-bind="options: $parents[0].availableOffsets, value: koma.fmOffset"></select>
+                  %p.invalid{ "data-bind"=>"visible: !koma.fmOffsetValid()" }
+                    0以上<span data-bind="text: $parents[0].fmTobiNum"></span>未満の数値を入力してください。</p>
+
+            .col-sm-6.col-md-4
+              .form-group.row
+                <label for="inputType" class="col-xs-4 col-md-4 control-label">向き</label>
+                .col-xs-8.col-md-8
+                  <select id="inputType" class="form-control" data-bind="options: $parents[0].availableSasiTypes, value:koma.fmType, optionsText: 'typeName'"></select>
+
+            .col-sm-6.col-md-4
+              .form-group.row
+                <label for="inputMatomeKagari" class="col-xs-4 col-md-4 control-label">まとめ刺し</label>
+                .col-xs-8.col-md-8
+                  <input type="checkbox" id="inputMatomeKagari" data-bind="checked: koma.fmKomaKagari, enable: $parents[0].fmEnableKasaneSasi"> 一度に1コマ分刺す</input>
+
+          .row.row-header
+            .col-xs-3.col-xs-offset-1.col-sm-2.col-sm-offset-1
+              <label class="control-label"></label>
+
+            .col-xs-5.col-sm-4
+              <label class="control-label">色</label>
+
+            .clearfix.visible-xs-block
+            .col-xs-4.col-xs-offset-4.col-sm-3.col-sm-offset-0
+              <label class="control-label">段数</label>
+
+            .col-xs-4.col-sm-2
+              <label class="control-label"></label>
+
+          <!-- ko foreach: { data: itoArray, as: 'ito' } -->
+          .row{ "data-bind"=>"css: $index() % 2 == 0 ? 'row-odd' : 'row-even'" }
+            .col-link.col-xs-3.col-xs-offset-1.col-sm-2.col-sm-offset-1
+              <!-- ko if: koma.itoArray().length - 1 -->
+              <a href="#" data-bind="click: koma.moveUp">▲</a>
+              <a href="#" data-bind="click: koma.moveDown">▼</a>
+              <!-- /ko -->
+
+            .col-xs-5.col-sm-4
+              <input class="form-control" data-bind="value: ito.fmColor" />
+              <p class="invalid" data-bind="visible: !ito.fmColorValid()">色名を入力してください。</p>
+
+            .clearfix.visible-xs-block
+            .col-xs-4.col-xs-offset-4.col-sm-3.col-sm-offset-0
+              <input class="hidden-xs form-control number" data-bind="value: ito.fmRound" />
+              <select class="visible-xs form-control" data-bind="options: $parents[1].availableRoundNums, value: ito.fmRound"></select>
+              <p class="invalid" data-bind="visible: !ito.fmRoundValid()">1以上の数値を入力してください。</p>
+
+            .col-xs-4.col-sm-2
+              <!-- ko if: koma.itoArray().length - 1 -->
+              <button class="btn btn-default" data-bind="click: koma.removeIto">削除</button>
+              <!-- /ko -->
+          <!-- /ko -->
+      <!-- /ko -->
+      <!-- /ko -->
+
+      =haml :'simulator/howto'
+
+      =haml :'simulator/qa'
+
+      <script type="text/javascript" src="script/main.js"></script>
+
+      .footer
+        = "#{@site_name} (c) 2002-2015 Ichigo Matsuzora  松空 いちご"

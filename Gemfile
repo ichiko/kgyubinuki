@@ -5,4 +5,4 @@ gem "sinatra", require: "sinatra/base"
 gem "sinatra-contrib", require: "sinatra/contrib/all"
 
 #gem "sass"
-#gem "haml"
+gem "haml"

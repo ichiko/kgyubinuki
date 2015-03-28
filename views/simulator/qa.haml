@@ -1,0 +1,73 @@
+%h3#qa Q&A
+.panel.panel-default
+  .panel-heading
+    Q1. 色の指定に使用できるWebカラー名を教えてください。
+  .panel-body
+    %p A.
+    %p
+      Webカラーとは、ブラウザで定義されている色名です。英語表記の色名とほぼ同じで、青は blue、赤は red で表現します。
+
+    .panel.panel-default
+      .panel-body
+        %p 基本的な色のリストを<a href="#colorpallet_link" id="colorpallet_link">開く</a>
+        %table#colorpallet.table.table-condensed
+          %thead
+            %th 色名
+            %th 指定する値（こっちをコピペ）
+          %tbody
+            %tr
+              %td 赤
+              %td red
+            %tr
+              %td オレンジ
+              %td orange
+            %tr
+              %td 黄色
+              %td yellow
+            %tr
+              %td 黄緑
+              %td greenyellow
+            %tr
+              %td 緑
+              %td green
+            %tr
+              %td 青緑
+              %td lightseagreen
+            %tr
+              %td 青
+              %td blue
+            %tr
+              %td 紫
+              %td purple
+            %tr
+              %td 白
+              %td white
+            %tr
+              %td 灰色
+              %td gray
+            %tr
+              %td 黒
+              %td black
+        %p 下記のリンクから、一覧を見ることができます。
+        %p
+          %span.glyphicon.glyphicon-link
+          %a{ :href=>"http://www.colordic.org", :target=>"_blank" }WEB色見本 原色大辞典 - HTML Color Names
+          (外部サイト)
+
+.panel.panel-default
+  .panel-heading
+    Q2. 矢鱈縞(やたらごうし)の模様を作るにはどうすればいいですか?
+  .panel-body
+    %p A.
+    %p
+      矢鱈縞は、刺し始めの位置をひとつしか持たないかがり方で作ります。そのため、トビ数分の設定が必要ありません。
+    %p
+      チェックボックス「刺し位置をずらさずに、ひとつだけ使用する(矢鱈縞)」にチェックを入れることで、刺し位置の設定をひとつにすることができます。
+
+.panel.panel-default
+  .panel-heading
+    Q3. かがり途中の状態を見ることはできますか?
+  .panel-body
+    %p A.
+    %p
+      チェックボックス「途中までシミュレート」にチェックを入れ、その下にあるスライダーを動かして、段数を指定することで、その段までのシミュレート結果を表示することができます。
