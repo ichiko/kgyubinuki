@@ -33,13 +33,18 @@ module.exports = (grunt) ->
 				options:
 					specs: 'spec/js/*.js'
 					helpers: 'lib/jquery/jquery.js'
+		exec:
+			generate:
+				command: 'bundle exec rake make_static_file'
 
 
 	grunt.loadNpmTasks 'grunt-contrib-watch'
 	grunt.loadNpmTasks 'grunt-bower-task'
 	grunt.loadNpmTasks 'grunt-browserify'
 	grunt.loadNpmTasks 'grunt-contrib-jasmine'
+	grunt.loadNpmTasks 'grunt-exec'
 	grunt.registerTask 'default', ['watch']
 	grunt.registerTask 'build', ['browserify:app']
 	grunt.registerTask 'spec', ['browserify:spec', 'jasmine']
+	grunt.registerTask 'generate', ['exec:generate']
 	return

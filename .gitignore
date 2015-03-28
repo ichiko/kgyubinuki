@@ -12,3 +12,5 @@ spec/obj
 public/
 !public/css
 !public/index.html
+
+static/
