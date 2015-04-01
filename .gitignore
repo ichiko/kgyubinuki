@@ -14,3 +14,5 @@ public/
 !public/index.html
 
 static/
+
+views/shared/associate.haml
