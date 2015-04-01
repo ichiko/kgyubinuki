@@ -115,13 +115,8 @@
       .form-group
         <button data-bind="click: cmdSimulate">シミュレート</button>
         &nbsp;&nbsp;&nbsp;&nbsp;
-
-        <button type="button" id="btnSave" class="hidden-xs" data-bind="click: openSave, visible: enableStorage">
-        保存...
-        </button>
-        <button type="button" id="btnSave" class="hidden-xs" data-bind="click: openLoad, visible: enableStorage">
-        読込み...
-        </button>
+        <button type="button" id="btnSave" class="hidden-xs" data-bind="click: openSave, visible: enableStorage">保存...</button>
+        <button type="button" id="btnSave" class="hidden-xs" data-bind="click: openLoad, visible: enableStorage">読込み...</button>
 
       .collapse#saveInformation
         .well.form-inline
