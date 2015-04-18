@@ -478,10 +478,14 @@ Simulator = (function() {
           if (stepExecute && stepCount >= stepNum) {
             break;
           }
+          if (koma.isFilled()) {
+            continue;
+          }
           komaKagari = koma.komaKagari;
           if (komaKagari) {
             if (prevKoma !== null && !prevKoma.komaKagari && !prevKoma.isFilled()) {
-              continue;
+              allFilled = false;
+              break;
             }
             while (!koma.isFilled()) {
               if (stepExecute && stepCount >= stepNum) {

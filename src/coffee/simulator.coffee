@@ -118,10 +118,14 @@ class Simulator
 				if stepExecute and stepCount >= stepNum
 					break
 
+				if koma.isFilled()
+					continue
+
 				komaKagari = koma.komaKagari
 				if komaKagari
 					if prevKoma != null and !prevKoma.komaKagari and !prevKoma.isFilled()
-						continue
+						allFilled = false
+						break
 					while !koma.isFilled()
 						if stepExecute and stepCount >= stepNum
 							break
