@@ -161,7 +161,7 @@ class Simulator
 			start_x = left + sasiOffset + komaWidth * sasiStart
 			end_x = left + sasiOffset + komaWidth * sasiEnd
 
-			if type == SasiType.Hiraki
+			if type == SasiType.Hiraki and sasiEnd < 0
 				start_x += simulatorWidth
 				end_x += simulatorWidth
 
@@ -180,7 +180,7 @@ class Simulator
 				more_one = true
 				start_x -= simulatorWidth
 				end_x -= simulatorWidth
-			if type == SasiType.Hiraki and end_x <= PADDING_LEFT
+			if type == SasiType.Hiraki and end_x <= left
 				more_one = true
 				start_x += simulatorWidth
 				end_x += simulatorWidth
