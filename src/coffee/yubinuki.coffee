@@ -60,7 +60,7 @@ class Koma extends ValidatableModel
 
 	# 戻り値：true(段が変わらない), false(次は段が変わる)
 	kagaru: ->
-		# 一段をかがるのに必要な針数：最小公倍数(コマ、トビ) / トビ * 2
+		# 一段をかがると埋まるコマの数：最小公倍数(コマ、トビ) / トビ * 2
 		if @type == SasiType.Nami
 			@sasiCount += @config.tobi / 2.0
 		else
