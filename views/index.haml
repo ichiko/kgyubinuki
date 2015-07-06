@@ -39,39 +39,23 @@
             %li
               %a{ :href=>'#simulator' }
                 シミュレータ
-            %li
-              %a{ :href=>'#howto' }
-                使い方
-            %li
-              %a{ :href=>'#qa' }
-                Q&amp;A
 
     .container
       %div.page-header
         %h1
-          加賀ゆびぬき　刺し模様シミュレータ <small>v0.72(20150418)</small>
+          加賀ゆびぬき　刺し模様シミュレータ <small><s>v0.72(20150418)</s></small>
 
-      %p.lead
-        加賀ゆびぬきの刺し模様をシミュレートします。
+      %div.alert.alert-warning
+        <h2>「加賀ゆびぬき 刺し模様シミュレータ」は、引越ししました。</h2>
+        %br
 
-        %ul
-          %li 手順どおりに、リストにしていけばだいたい再現します。
-          %li 並み刺し、開き刺しに対応しています。
-          %li 重ね刺しに対応しています。一度に1コマ分を一気に刺す場合は、「まとめ刺し」にチェックを入れてください。
-          %li 各コマで使用する糸の色を指定できます。段数がコマ内の針数に不足するときは、色の指定をくりかえすものとして動きます。
-          =# %li <s>設定をテキストで保存できるようになりました。(v0.7 NEW)</s>
-          %li 設定をブラウザに保存できるようになりました。PC版のみ。(v0.71 NEW)
-          %li まとめて刺すコマ設定がある場合に、シミュレート結果が正しくない問題を修正しました。(v0.72)
+        新URLでのご利用をお待ちしております。新URL <strong>最新版v0.8が稼働中!</strong> → 
+        %a{ :href=>'http://yubinuki.ichiko.me'}
+          http://yubinuki.ichiko.me
+        %br
+        %br
+        連絡先 Twitter <a href="https://twitter.com/ichiko_revjune">@ichiko_revjune</a>
 
-      %p
-        できないこと。
-        %ul
-          %li くぐり刺しの再現。
-
-      %p
-        バグ報告や要望は、Twitter <a href="https://twitter.com/ichiko_revjune">@ichiko_revjune</a> まで。
-
-      %p
         <a href="https://twitter.com/intent/tweet?screen_name=ichiko_revjune" class="twitter-mention-button" data-related="ichiko_revjune">Tweet to @ichiko_revjune</a> <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>
 
       %h3#simulator.page-header シミュレータ
@@ -116,25 +100,7 @@
       .form-group
         <button data-bind="click: cmdSimulate">シミュレート</button>
         &nbsp;&nbsp;&nbsp;&nbsp;
-        <button type="button" id="btnSave" class="hidden-xs" data-bind="click: openSave, visible: enableStorage">保存...</button>
         <button type="button" id="btnSave" class="hidden-xs" data-bind="click: openLoad, visible: enableStorage">読込み...</button>
-
-      .collapse#saveInformation
-        .well.form-inline
-          %button.close{ :type=>"button", "data-dismiss"=>"alert", "aria-label"=>"Close", "data-bind"=>"click: closeSave" }
-            <span aria-hidden="true">&times;</span>
-
-          <p>ブラウザに保存します。</p>
-          .form-group
-            <label class="control-label">data No.</label>
-            <select class="form-control" data-bind="options: storage().dataArray, value: selectedStorage, optionsText: 'label'">
-            </select>
-
-          .form-group
-            <label class="sr-only">コメント</label>
-            <input type="text" class="form-control" placeholder="コメント" data-bind="value: saveComment">
-
-          <button class="btn btn-primary" data-bind="click: saveYubinuki">保存する</button>
 
       .collapse#loadInformation
         .well.form-inline
@@ -221,10 +187,6 @@
       <!-- /ko -->
 
       =haml :'shared/associate'
-
-      =haml :'simulator/howto'
-
-      =haml :'simulator/qa'
 
       <script type="text/javascript" src="script/main.js"></script>
 
